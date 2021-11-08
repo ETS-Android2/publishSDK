@@ -1,0 +1,3 @@
+rootProject.name = "BmdhSdkGenerate"
+include ':app'
+include ':BmdhSdk'
