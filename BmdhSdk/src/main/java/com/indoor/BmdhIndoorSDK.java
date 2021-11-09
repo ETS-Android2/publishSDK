@@ -76,20 +76,11 @@ public class BmdhIndoorSDK {
 
 
     /**
-     * 当前室内外环境改变的回调
+     * 对当前室内外环境改变，当前室内楼层改变，已经服务断开了的监听
      *
      * @param listener 监听器
      */
-    public void setIndoorOrOutdoorChangedListener(IBmdhNaviManager.INaviIndoorOrOutdoorChangeListener listener){
-
-    }
-
-    /**
-     * 当前室内楼层改变的回调
-     *
-     * @param listener 监听器
-     */
-    public void setFloorChangedListener(IBmdhNaviManager.INaviFloorChangeListener listener){
+    public void setIndoorOrOutdoorChangedListener(IBmdhNaviManager.INaviIndoorStateChangeListener listener){
 
     }
 

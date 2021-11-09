@@ -72,27 +72,17 @@ manifest.xml需要添加权限
     public void startIndoorLocation(IPSMeasurement.Callback callback)
 
 ### 室内外状态发生改变时的回调
-    /**
-     * 当前室内外环境改变的回调
-     * 
+     /**
+     * 对当前室内外环境改变，当前室内楼层改变，已经服务断开了的监听
+     *
      * @param listener 监听器
      */
-    public void setIndoorOrOutdoorChangedListener(IBmdhNaviManager.INaviIndoorOrOutdoorChangeListener listener){
+    public void setIndoorOrOutdoorChangedListener(IBmdhNaviManager.INaviIndoorStateChangeListener listener){
 
     }
 
-作用：给用户自定义室内外切换的逻辑，如切换室内外地图，该时机加上日志上传
-### 楼层状态发生改变时的回调
-    /**
-       * 当前室内楼层改变的回调
-       * 
-       * @param listener 监听器
-       */
-    public void setFloorChangedListener(IBmdhNaviManager.INaviFloorChangeListener listener){
+作用：给用户自定义监听的逻辑，如切换室内外地图、换地图楼层，该时机加上日志上传
 
-    }
-
-作用：给用户自定义楼层切换的逻辑，比如切换地图楼层，该时机加上日志上传
 ### 当前是否为支持室内的定位的环境；
     isCurrentIndoor()
   作用：作为用户室内外地图切换的时机点
