@@ -52,6 +52,11 @@ public class BmdhIndoorConfig {
         public Builder() {
         }
 
+        public BmdhIndoorConfig.Builder DEAFULT(Context var1) {
+            this.context = var1;
+            return this;
+        }
+
         public BmdhIndoorConfig.Builder context(Context var1) {
             this.context = var1;
             return this;
