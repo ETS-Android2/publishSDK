@@ -16,6 +16,7 @@ import androidx.annotation.RequiresApi;
 
 import com.indoor.position.IPSMeasurement;
 import com.indoor.position.IndoorPositionService;
+import com.indoor.utils.Utils;
 
 public class BmdhIndoorSDK {
     private static final String TAG="BmdhIndoorSDK";
@@ -92,6 +93,7 @@ public class BmdhIndoorSDK {
      */
     public void init(Context context, BmdhIndoorConfig bmdhIndoorConfig) {
         mContext=context.getApplicationContext();
+        Utils.init(context);
         mBmdhIndoorConfig=bmdhIndoorConfig;
         mBmdhIndoorStrategy=new BmdhIndoorStrategy(mContext);
 

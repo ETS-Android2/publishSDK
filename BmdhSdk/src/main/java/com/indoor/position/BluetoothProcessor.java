@@ -107,6 +107,6 @@ class BluetoothProcessor {
         current.bluetoothRssi(result.getRssi());
         current.count(last.getCount() + 1);
         this.historicalData.put(deviceName, current.build());
-        //Log.d(LOG_TAG, String.format("onScanResult: %s", current));
+        Log.d(LOG_TAG, String.format("onScanResult: %s", current));
     }
 }
