@@ -36,8 +36,68 @@ public class Inputparameter {
     }
   }
 
-  public Inputparameter() {
-    this(IPSJNI.new_Inputparameter(), true);
+  public void setRoomCenter(double[] value) {
+    IPSJNI.Inputparameter_roomCenter_set(swigCPtr, this, value);
+  }
+
+  public double[] getRoomCenter() {
+    return IPSJNI.Inputparameter_roomCenter_get(swigCPtr, this);
+  }
+
+  public void setThreshold_x_y(double[] value) {
+    IPSJNI.Inputparameter_threshold_x_y_set(swigCPtr, this, value);
+  }
+
+  public double[] getThreshold_x_y() {
+    return IPSJNI.Inputparameter_threshold_x_y_get(swigCPtr, this);
+  }
+
+  public void setBluetoothCheckResult(boolean value) {
+    IPSJNI.Inputparameter_bluetoothCheckResult_set(swigCPtr, this, value);
+  }
+
+  public boolean getBluetoothCheckResult() {
+    return IPSJNI.Inputparameter_bluetoothCheckResult_get(swigCPtr, this);
+  }
+
+  public void setBluetoothReferLocation(double[] value) {
+    IPSJNI.Inputparameter_bluetoothReferLocation_set(swigCPtr, this, value);
+  }
+
+  public double[] getBluetoothReferLocation() {
+    return IPSJNI.Inputparameter_bluetoothReferLocation_get(swigCPtr, this);
+  }
+
+  public void setFixedCoor(double[] value) {
+    IPSJNI.Inputparameter_fixedCoor_set(swigCPtr, this, value);
+  }
+
+  public double[] getFixedCoor() {
+    return IPSJNI.Inputparameter_fixedCoor_get(swigCPtr, this);
+  }
+
+  public void setroomCenter(double[] p) {
+    IPSJNI.Inputparameter_setroomCenter(swigCPtr, this, p);
+  }
+
+  public void setthreshold_x_y(double[] p) {
+    IPSJNI.Inputparameter_setthreshold_x_y(swigCPtr, this, p);
+  }
+
+  public void setbluetoothCheckResult(boolean p) {
+    IPSJNI.Inputparameter_setbluetoothCheckResult(swigCPtr, this, p);
+  }
+
+  public void setbluetoothReferLocation(double[] p) {
+    IPSJNI.Inputparameter_setbluetoothReferLocation(swigCPtr, this, p);
+  }
+
+  public void setfixedCoor(double[] p) {
+    IPSJNI.Inputparameter_setfixedCoor(swigCPtr, this, p);
+  }
+
+  public Inputparameter(double[] proomCenter, double[] pthreshold_x_y, boolean pbluetoothCheckResult, double[] pbluetoothReferLocation, double[] pfixedCoor) {
+    this(IPSJNI.new_Inputparameter(proomCenter, pthreshold_x_y, pbluetoothCheckResult, pbluetoothReferLocation, pfixedCoor), true);
   }
 
 }

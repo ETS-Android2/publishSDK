@@ -70,14 +70,14 @@ class GNSSProcessor {
 
 
         public void setflitermode(flitermod p, List<Integer> svids){
-                flitermode = p;
-                if(svids!=null) {
-                    othersvids = new HashSet<>(svids);
-                }
-                else
-                {
-                    othersvids=null;
-                }
+            flitermode = p;
+            if(svids!=null) {
+                othersvids = new HashSet<>(svids);
+            }
+            else
+            {
+                othersvids=null;
+            }
         }
         // 过滤模式
         enum flitermod {
@@ -94,13 +94,13 @@ class GNSSProcessor {
 
         @Override
         public boolean test(GNSSData.SatelliteGNSSMeasurements s) {
-           if(flitermode == flitermod.freL5) {
-               if(othersvids!=null) {
-                   return s.getFrequency() == GNSSData.Frequency.L5 && othersvids.contains(s.getSvid());
-               }else{
-                   return s.getFrequency() == GNSSData.Frequency.L5;
-               }
-           }
+            if(flitermode == flitermod.freL5) {
+                if(othersvids!=null) {
+                    return s.getFrequency() == GNSSData.Frequency.L5 && othersvids.contains(s.getSvid());
+                }else{
+                    return s.getFrequency() == GNSSData.Frequency.L5;
+                }
+            }
             else if (flitermode == flitermod.Lengthwise) {
                 // 纵向1，3，5，6，L1
                 return LengthAllowSvid.contains(s.getSvid()) && s.getFrequency() == GNSSData.Frequency.L1;
@@ -112,14 +112,14 @@ class GNSSProcessor {
             else if(flitermode==flitermode.others){
                 return othersvids.contains(s.getSvid()) && s.getFrequency() == GNSSData.Frequency.L1;
             }else if(flitermode == flitermod.freL1) {
-               if(othersvids!=null) {
-                   return s.getFrequency() == GNSSData.Frequency.L1 && othersvids.contains(s.getSvid());
-               }else{
-                   return s.getFrequency() == GNSSData.Frequency.L1;
-               }
-           }else {
-               return false;
-           }
+                if(othersvids!=null) {
+                    return s.getFrequency() == GNSSData.Frequency.L1 && othersvids.contains(s.getSvid());
+                }else{
+                    return s.getFrequency() == GNSSData.Frequency.L1;
+                }
+            }else {
+                return false;
+            }
         }
 
         @Override
@@ -171,8 +171,10 @@ class GNSSProcessor {
         if (gnssCallback == null) {
             return;
         }
+
         locationManager.unregisterGnssMeasurementsCallback(gnssCallback);
         historicData.clear();
+        gnssCallback=null;
     }
 
     /**

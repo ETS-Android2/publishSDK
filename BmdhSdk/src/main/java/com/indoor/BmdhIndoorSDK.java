@@ -67,12 +67,12 @@ public class BmdhIndoorSDK {
      *
      * @param callback 获取到位置信息后的回调，1s回调一次
      */
-    public void startIndoorLocation(IPSMeasurement.Callback callback){
+    public void startIndoorLocation(String mapId,IPSMeasurement.Callback callback){
         if(mBmdhIndoorStrategy==null){
             Log.e(TAG,"mBmdhIndoorStrategy is null");
             return;
         }
-        mBmdhIndoorStrategy.startIndoorSdkLocate(callback);
+        mBmdhIndoorStrategy.startIndoorSdkLocate(mapId,callback);
     }
 
 

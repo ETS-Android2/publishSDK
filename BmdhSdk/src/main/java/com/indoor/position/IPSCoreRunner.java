@@ -4,13 +4,10 @@ package com.indoor.position;
 
 import static com.indoor.position.IPSMeasurement.Mode.INDOOR;
 import static com.indoor.position.IPSMeasurement.Mode.OUTDOOR;
-
 import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
-
-//import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.indoor.position.swiggenerated.IndoorPositionMeasurement;
@@ -19,13 +16,10 @@ import com.indoor.position.swiggenerated.SatelliteIndoorMeasurement;
 import com.indoor.position.swiggenerated.SatelliteIndoorMeasurementList;
 import com.indoor.position.swiggenerated.SatelliteInfo;
 import com.indoor.position.swiggenerated.SatelliteInfoList;
-import com.indoor.position.swiggenerated.SatelliteIndoorMeasurement;
 import com.indoor.position.swiggenerated.Inputparameter;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-//import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,10 +39,6 @@ class IPSCoreRunner {
     private final Timer timer = new Timer();
     private String debugstring;
     private final AtomicReference<IPSMeasurement.Callback> callback;
-    /*private final IPSMeasurement userPosition = null;
-    private final IPSMeasurement crossPositon1 = new IPSMeasurement("", 0, 0, 1.4, 0.0, 0.0, 0.0, 123, INDOOR);
-    private final IPSMeasurement crossPositon2 = new IPSMeasurement("", 15, 20, 0, 0.0, 0.0, 0.0, 123, INDOOR);*/
-    //private final ThreadSafeQueue<Float> orientationX = new ThreadSafeQueue<>(6);
     // TODO: refactor this
     private double[] bluetoothReferLocation={1,2,3};
     private IPSMeasurement.Mode mode= OUTDOOR;
@@ -57,24 +47,44 @@ class IPSCoreRunner {
     private boolean hasinittwodeKF=false;
     private int currentpath=0;//= GNSSProcessor.GNSSFilter.RoadDir.Lengthwise;
     private double[] pathRange;
-    double[] fixedCoor= new double[]{0,0,1.4};
+	double[] fixedCoor= new double[]{0,0,1.0};
+	boolean ispsemodeL1=true;
+    //坏了一路的双发射机
+/*    Integer listL1[]={1, 3, 24, 25,26, 27, 30, 32};
+    Integer listL5[]={1, 3, 24, 25,26, 30, 32};*/
+/*    Integer listL1[]={1, 2, 3, 4,5, 27, 30, 32};
+    Integer listL5[]={1, 2, 3, 4,5, 30, 32};*/
+    Integer listL1[]={1, 2, 3, 4,5,6, 7, 8,9,10,11,12};
+    Integer listL5[]={1, 2, 3, 4,5,6, 7, 8,9,10,11,12};
+    //移动停车场发射机
+  /*  Integer listL1[]={1, 3, 24, 25,26, 27, 30, 32};
+    Integer listL5[]={1, 3, 24, 25,26, 27,30, 32};*/
+    /*公司*/
+    /*double[] gmocratorfixcoord=new double[]{13536740.6489254,3649357.91954317,0};
+    double gdegZfixcoord=4.3907;*/
+    /*长兴*/
+    /*
+    double[] gmocratorfixcoord=new double[]{13553441.0197,3679297.281,0};
+    double gdegZfixcoord=Math.PI*1.5;*/
 
-    //double[] gmocratorfixcoord=new double[]{13553441.0197,3679297.281,0};
-    //double gdegZfixcoord=Math.PI*1.5;
-
-    /***长兴海洋装备
     double[] gmocratorfixcoord=new double[]{0,0,0};
-    double gdegZfixcoord=0;**/
-    //方位角办公室
-    double[] gmocratorfixcoord=new double[]{13536740.8542030,3649358.63141886,3.4312};
-    double gdegZfixcoord=Math.PI*1.5;
+    double gdegZfixcoord=0;
 /** 地下室 **/
 /*    double[] roomCenter=new double[]{29.63,6.88};
     double[] threshold_x_y=new double[]{9,8};*/
-    /** 停车场 **/
-    double[] roomCenter=new double[]{6,7};
-    double[] threshold_x_y=new double[]{14,13};
 
+        /*停车场*/
+/*    double[] roomCenter=new double[]{7,9};
+    double[] threshold_x_y=new double[]{13,14};*/
+/*   *//* *//**//** 公司 **//*
+    double[] roomCenter=new double[]{0.3,7};
+    double[] threshold_x_y=new double[]{9,9};*/
+    /** 移动停车场 **/
+   /* double[] roomCenter=new double[]{0,15};
+    double[] threshold_x_y=new double[]{4,17};*/
+    /** 公司12颗星 **/
+   double[] roomCenter=new double[]{5.1528,7.1252};
+    double[] threshold_x_y=new double[]{20,10};
     Map<String, List<Double>> bluetoothLabel;
 
     private static final double[][] pathrangeindex=new double[][]{{0,-28,0,0},{5,0,17,0}};
@@ -93,8 +103,39 @@ class IPSCoreRunner {
         this.callback = new AtomicReference<>();
     }
 
-    public void initConfig(double[] gmocratorfixcoord){
+
+    void updateInputData(SatelliteInfoList s,Inputparameter inputparameter)
+    {
+        roomCenter=inputparameter.getRoomCenter();
+        threshold_x_y=inputparameter.getThreshold_x_y();
+        fixedCoor=inputparameter.getFixedCoor();
+        double[] initpoint=new double[] {roomCenter[0],roomCenter[1],1.0} ;
+        indoorPositionProcessor.updateSatelliteInfo(s,initpoint);
+    }
+
+    /**
+     * 更新卫星序列号和定位模式是否仅用L1
+     *
+     * @param listL1 L1星序列号
+     * @param listL5 L5星序列号
+     * @param ispsemodeL1 定位模式是否仅用L1
+     */
+    void updateSatelliteSerial(Integer listL1[],Integer listL5[],boolean ispsemodeL1){
+        this.listL1=listL1;
+        this.listL5=listL5;
+        this.ispsemodeL1=ispsemodeL1;
+    }
+
+
+    /**
+     * 更新墨卡托转换参数
+     *
+     * @param gmocratorfixcoord
+     * @param gdegZfixcoord
+     */
+    void updateMercatorConvertParameter(double[] gmocratorfixcoord, double gdegZfixcoord){
         this.gmocratorfixcoord=gmocratorfixcoord;
+        this.gdegZfixcoord=gdegZfixcoord;
     }
 
 
@@ -104,40 +145,13 @@ class IPSCoreRunner {
     boolean startUp() {
         boolean state = gnssProcessor.startUp();
         if (state) {
-            SatelliteInfoList s = new SatelliteInfoList();
-/*  地下室老发射机坐标
-            s.add(new SatelliteInfo(22.64,1.44,3.85,1));
-            s.add(new SatelliteInfo(30.53,5.06,3.77, 2));
-            s.add(new SatelliteInfo(34.84,5.06,3.75, 3));
-            s.add(new SatelliteInfo(35.24,10.49,4.00, 4));
-            s.add(new SatelliteInfo(22.64,10.49,3.90, 5));
-            s.add(new SatelliteInfo(24.53,3.44,3.88, 6));
-            s.add(new SatelliteInfo(26.09,7.688,3.887, 7));
-            s.add(new SatelliteInfo(31.75,7.688,4.00, 8));*/
-            /*二维停车场室坐标*/
-            s.add(new SatelliteInfo( 13.59,0.00,2.43,1  ));
-            s.add(new SatelliteInfo( 19.20,0.00,2.63,2));
-            s.add(new SatelliteInfo( 0.00,16.10,2.67,3 ));
-            s.add(new SatelliteInfo( 14.00,16.10,2.66,4 ));
-            s.add(new SatelliteInfo(18.74,16.10,2.66,5 ));
-            s.add(new SatelliteInfo( -4.96,11.00,2.68,6  ));
-            s.add(new SatelliteInfo( 7.09,11.00,2.69,7 ));
-            s.add(new SatelliteInfo( 7.09,21.38,2.68,8));
-            /*二维移动双发射机坐标
-           s.add(new SatelliteInfo(22.64,1.44,3.85, 1));
-            s.add(new SatelliteInfo(30.53,5.06,3.77, 3));
-            s.add(new SatelliteInfo(34.84,5.06,3.75, 24));
-            s.add(new SatelliteInfo(35.24,10.49,4.00, 25));
-            s.add(new SatelliteInfo(22.64,10.49,3.90, 26));
-            s.add(new SatelliteInfo(24.53,3.44,3.88, 27));
-            s.add(new SatelliteInfo(26.09,7.688,3.887 , 30));
-            s.add(new SatelliteInfo(31.75,7.688,4.00 , 32));*/
-            double[] initpoint=new double[] {roomCenter[0],roomCenter[1],1.3} ;
-            indoorPositionProcessor.updateSatelliteInfo(s,initpoint);
             CallbackSchedule();
         }
         //蓝牙标签位置初始化
         bluetoothLabel =ImmutableMap.<String, List<Double>>builder().
+
+               put("017", Arrays.<Double>asList(0.00,  -27.52,  1.3)).
+                put("018", Arrays.<Double>asList(0.00,  -27.52,  1.3)).
                 put("016", Arrays.<Double>asList(0.0,0.0, 1.4)).
                         build();
         return state;
@@ -165,11 +179,25 @@ class IPSCoreRunner {
             }
         }
         if (!maxId.equals("") && maxCnt >= 2) {
+         if ((maxId.equals("017") || maxId.equals("018")) && mode == OUTDOOR) {
+                mode = INDOOR;
+                mapID=1;
+                currentpath=0;
+                pathRange=pathrangeindex[currentpath];
+                if(!hasinitonedeKF) {
+                    indoorPositionProcessor.initialAPBCaKFOneDimen();
+                    hasinitonedeKF=true;
+                    debugstring="first time indoor,initialAbsolutePositioningBaseCarrierKFOneDimen";
+                    Log.i(TAG, debugstring);
+                }
+            }
             if((maxId.equals("016"))) {
+
                 if(!hasinittwodeKF) {
                     indoorPositionProcessor.initialAPBCKFTwoDimen();
                     hasinittwodeKF = true;
                     areaRange= new double[]{roomCenter[0] - threshold_x_y[0], roomCenter[1] - threshold_x_y[1], roomCenter[0] + threshold_x_y[0], roomCenter[1] + threshold_x_y[1]};
+                    Log.i(TAG, "init initialAbsolutePositioningBaseCarrierKFTwoDimen");
                 }
                 mapID=2;
                 mode=INDOOR;
@@ -228,54 +256,84 @@ class IPSCoreRunner {
                 }
                 bluetoothProcessor.clearHisBluetoothData();*/
                 GNSSData gnssData = gnssProcessor.getGNSSData();
+                long deltaTimeMillis=0;
+                if(gnssData != null) {
+                    deltaTimeMillis = Utils.getCurrentTimeMillis() - gnssData.getCreateTimeMillis();
+                }
+
+                Inputparameter inputparameter =new Inputparameter(roomCenter,threshold_x_y,bluetoothCheckResult,bluetoothReferLocation,fixedCoor);
+
                 if (mode == INDOOR) {
                     GNSSProcessor.GNSSFilter fliter;
                     if (gnssData != null&&gnssData.getSatelliteGNSSMeasurements().size()>0) {
-                        fliter = new GNSSProcessor.GNSSFilter(GNSSProcessor.GNSSFilter.flitermod.freL5);
-                        ImmutableList<GNSSData.SatelliteGNSSMeasurements> finalGnssData = gnssData.
-                                getSatelliteGNSSMeasurements().values().stream().filter(fliter).collect(ImmutableList.toImmutableList());
-                        SatelliteIndoorMeasurementList finalInputMeasurementsL5 = new SatelliteIndoorMeasurementList();
-                        finalGnssData.asList().forEach(
-                                s -> {
-                                    SatelliteIndoorMeasurement m = new SatelliteIndoorMeasurement();
-                                    m.setSvid(s.getSvid());
-                                    m.setaccumulatedDeltaRangeMeters(s.getAccumulatedDeltaRangeMeters());
-                                    m.setaccumulatedDeltaRangeUncertaintyMeters(s.getAccumulatedDeltaRangeUncertaintyMeters());
-                                    m.setcarrierFrequencyHz(s.getCarrierFrequencyHz());
-                                    m.setreceivedSvTimeUncertaintyNanos(s.getReceivedSvTimeUncertaintyNanos());
-                                    m.setPseudorange(s.getPseudorange());
-                                    m.setaccumulatedDeltaRangeState(s.getAccumulatedDeltaRangeState());
-                                    m.setpseudorangeRateMetersPerSecond(s.getPseudorangeRateMetersPerSecond());
-                                    m.setpseudorangeRateUncertaintyMetersPerSecond(s.getPseudorangeRateUncertaintyMetersPerSecond());
-                                    finalInputMeasurementsL5.add(m);
-                                });
-                        SatelliteIndoorMeasurementList finalInputMeasurementsL1 = new SatelliteIndoorMeasurementList();
-                        fliter = new GNSSProcessor.GNSSFilter(GNSSProcessor.GNSSFilter.flitermod.freL1);
-                        finalGnssData = gnssData.
-                                getSatelliteGNSSMeasurements().values().stream().filter(fliter).collect(ImmutableList.toImmutableList());
-                        finalGnssData.asList().forEach(
-                                s -> {
-                                    SatelliteIndoorMeasurement m = new SatelliteIndoorMeasurement();
-                                    m.setSvid(s.getSvid());
-                                    m.setaccumulatedDeltaRangeMeters(s.getAccumulatedDeltaRangeMeters());
-                                    m.setaccumulatedDeltaRangeUncertaintyMeters(s.getAccumulatedDeltaRangeUncertaintyMeters());
-                                    m.setcarrierFrequencyHz(s.getCarrierFrequencyHz());
-                                    m.setreceivedSvTimeUncertaintyNanos(s.getReceivedSvTimeUncertaintyNanos());
-                                    m.setPseudorange(s.getPseudorange());
-                                    m.setaccumulatedDeltaRangeState(s.getAccumulatedDeltaRangeState());
-                                    m.setpseudorangeRateMetersPerSecond(s.getPseudorangeRateMetersPerSecond());
-                                    m.setpseudorangeRateUncertaintyMetersPerSecond(s.getPseudorangeRateUncertaintyMetersPerSecond());
-                                    finalInputMeasurementsL1.add(m);
-                                });
-                        Inputparameter inputparameter =new Inputparameter();
-                        posresult = indoorPositionProcessor.run(finalInputMeasurementsL1,finalInputMeasurementsL5,inputparameter);
-                        c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,debugstring, mapID, mode));
-                        finalInputMeasurementsL5.clear();
-                        finalInputMeasurementsL1.clear();
+                        if(deltaTimeMillis<3000) {
+                            if(ispsemodeL1)
+                            {
+                                fliter = new GNSSProcessor.GNSSFilter(GNSSProcessor.GNSSFilter.flitermod.freL1);
+                                fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL1, Arrays.asList(listL1));}
+                            else
+                            {
+                                fliter = new GNSSProcessor.GNSSFilter(GNSSProcessor.GNSSFilter.flitermod.freL5);
+                                fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL5, Arrays.asList(listL5));
+                            }
+                            ImmutableList<GNSSData.SatelliteGNSSMeasurements> finalGnssData = gnssData.
+                                    getSatelliteGNSSMeasurements().values().stream().filter(fliter).collect(ImmutableList.toImmutableList());
+                            SatelliteIndoorMeasurementList finalInputMeasurementsL5 = new SatelliteIndoorMeasurementList();
+                            finalGnssData.asList().forEach(
+                                    s -> {
+                                        SatelliteIndoorMeasurement m = new SatelliteIndoorMeasurement();
+                                        m.setSvid(s.getSvid());
+                                        m.setaccumulatedDeltaRangeMeters(s.getAccumulatedDeltaRangeMeters());
+                                        m.setaccumulatedDeltaRangeUncertaintyMeters(s.getAccumulatedDeltaRangeUncertaintyMeters());
+                                        m.setcarrierFrequencyHz(s.getCarrierFrequencyHz());
+                                        m.setreceivedSvTimeUncertaintyNanos(s.getReceivedSvTimeUncertaintyNanos());
+                                        m.setPseudorange(s.getPseudorange());
+                                        m.setaccumulatedDeltaRangeState(s.getAccumulatedDeltaRangeState());
+                                        m.setpseudorangeRateMetersPerSecond(s.getPseudorangeRateMetersPerSecond());
+                                        m.setpseudorangeRateUncertaintyMetersPerSecond(s.getPseudorangeRateUncertaintyMetersPerSecond());
+                                        finalInputMeasurementsL5.add(m);
+                                    });
+                            SatelliteIndoorMeasurementList finalInputMeasurementsL1 = new SatelliteIndoorMeasurementList();
+                            fliter = new GNSSProcessor.GNSSFilter(GNSSProcessor.GNSSFilter.flitermod.freL1);
+                            fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL1, Arrays.asList(listL1));
+                            finalGnssData = gnssData.
+                                    getSatelliteGNSSMeasurements().values().stream().filter(fliter).collect(ImmutableList.toImmutableList());
+                            finalGnssData.asList().forEach(
+                                    s -> {
+                                        SatelliteIndoorMeasurement m = new SatelliteIndoorMeasurement();
+                                        m.setSvid(s.getSvid());
+                                        m.setaccumulatedDeltaRangeMeters(s.getAccumulatedDeltaRangeMeters());
+                                        m.setaccumulatedDeltaRangeUncertaintyMeters(s.getAccumulatedDeltaRangeUncertaintyMeters());
+                                        m.setcarrierFrequencyHz(s.getCarrierFrequencyHz());
+                                        m.setreceivedSvTimeUncertaintyNanos(s.getReceivedSvTimeUncertaintyNanos());
+                                        m.setPseudorange(s.getPseudorange());
+                                        m.setaccumulatedDeltaRangeState(s.getAccumulatedDeltaRangeState());
+                                        m.setpseudorangeRateMetersPerSecond(s.getPseudorangeRateMetersPerSecond());
+                                        m.setpseudorangeRateUncertaintyMetersPerSecond(s.getPseudorangeRateUncertaintyMetersPerSecond());
+                                        finalInputMeasurementsL1.add(m);
+                                    });
+                            posresult = indoorPositionProcessor.run(finalInputMeasurementsL1,finalInputMeasurementsL5,inputparameter);
+                            debugstring = "\n当前L5伪卫星数," + finalInputMeasurementsL5.size() +
+                                    "\n当前L1伪卫星数," + finalInputMeasurementsL1.size() +
+                                    "\nL5定位状态," + posresult.getL5locatestate() +
+                                    "\nL5定位结果," + posresult.getL5_x() + "," + posresult.getL5_y();
+                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord, debugstring, mapID, mode));
+                            finalInputMeasurementsL5.clear();
+                            finalInputMeasurementsL1.clear();
+                        }
+                        else
+                        {
+                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"重捕获复位", mapID, mode));
+                            gnssProcessor.tearDown();
+                            gnssProcessor.startUp();
+                            indoorPositionProcessor.initialAPBCKFTwoDimen();
+                        }
                     } else {
-                        c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"无测量数据", mapID, mode));
+                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"无测量值", mapID, mode));
                     }
                 } else {
+                    //非室内模式
+                    Log.i(TAG, "run: 室外模式！！");
                     c.onReceive(coordExchange(null, gmocratorfixcoord, 0,"室外模式", mapID, mode));
                 }
             }

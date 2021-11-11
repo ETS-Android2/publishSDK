@@ -14,20 +14,38 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.google.gson.Gson;
 import com.indoor.position.IPSMeasurement;
 import com.indoor.position.IndoorPositionService;
+import com.indoor.position.swiggenerated.Inputparameter;
+import com.indoor.position.swiggenerated.SatelliteInfo;
+import com.indoor.position.swiggenerated.SatelliteInfoList;
+import com.indoor.utils.RxFileUtils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BmdhIndoorStrategy {
     private static final String TAG = "BmdhIndoorStrategy";
     private static final String META_DATA = "com.bmdh.indoorsdk.API_KEY";
+    private static  String MAPCONFIG_PATH;
+    private static  String CONFIG_NAME="indoor_data";
     private Context mContext;
     private boolean mBound = false;
     private boolean mVerifySucess = false;
     private boolean mIsIndoor = false;
     private IPSMeasurement.Callback mCallback;
+    private MapConfig mapConfig ;
+    private String currentMapID="";
+    private MapConfig.DataConfigDTO mCurrentConfig;
 
     public BmdhIndoorStrategy(Context context) {
         mContext = context;
+        MAPCONFIG_PATH = context.getExternalCacheDir().getAbsolutePath()+ File.separator+CONFIG_NAME;
     }
 
     public boolean ismBound() {
@@ -59,20 +77,67 @@ public class BmdhIndoorStrategy {
         //TODO 网络请求，获取认证结果
     }
 
+    public String getMapConfig(Context context,String fileName){
+        String Result="";
+        try {
+            if (RxFileUtils.isFileExists(MAPCONFIG_PATH)) {
+                Result = RxFileUtils.readFile2String(MAPCONFIG_PATH, "UTF-8");
+            } else {
+                InputStream in=context.getResources().getAssets().open(CONFIG_NAME);
+                InputStreamReader inputReader = new InputStreamReader(in);
+                RxFileUtils.copyFile(in,new File(MAPCONFIG_PATH));
+                BufferedReader bufReader = new BufferedReader(inputReader);
+                String line = "";
+                while ((line = bufReader.readLine()) != null)
+                    Result += line;
+            }
+            return Result;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Result;
+    }
+
+
     /**
      * 启动室内定位服务
      *
      * @param callback
      */
-    public void startIndoorSdkLocate(IPSMeasurement.Callback callback) {
+    public void startIndoorSdkLocate(String mapID,IPSMeasurement.Callback callback) {
 //        if(!mVerifySucess){
 //            Log.e(TAG,"认证不通过，请确保APIKey正确");
 //            return;
 //        }
+        Gson gson = new Gson();
+        mapConfig = gson.fromJson(getMapConfig(mContext, "indoor_data"),MapConfig.class);
+        updateMapConfig(mapID);
         mCallback = callback;
         Intent intent = new Intent(mContext, IndoorPositionService.class);
         boolean status = mContext.bindService(intent, connection, Context.BIND_AUTO_CREATE);
         Log.d(TAG, "Service start!");
+    }
+
+    private void updateMapConfig(String mapID){
+
+        if(mapConfig==null){
+            Log.e(TAG,"mapConfig==null,data err...");
+            return;
+        }
+        if(currentMapID.equals(mapID)){
+            return;
+        }
+        Log.d(TAG,"updateMapConfig...");
+        currentMapID=mapID;
+        mCurrentConfig = mapConfig.getDataConfig().get(0);
+        for (MapConfig.DataConfigDTO dataConfig : mapConfig.getDataConfig()) {
+            if (dataConfig.getMapid().equals(currentMapID)) {
+                mCurrentConfig = dataConfig;
+                break;
+            }
+        }
+        indoorPositionService.setInfoAndStartup(s,mCurrentConfig);
+        Log.d(TAG,"mCurrentConfig is null == "+(mCurrentConfig==null));
     }
 
     private final ServiceConnection connection = new ServiceConnection() {
@@ -82,31 +147,35 @@ public class BmdhIndoorStrategy {
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             Log.d("ServiceConnection", "Service connected!");
-            final IndoorPositionService.LocalBinder binder = (IndoorPositionService.LocalBinder) service;
+            Log.d("ServiceConnection", "Service connected!");
+            IndoorPositionService.LocalBinder binder = (IndoorPositionService.LocalBinder) service;
             IndoorPositionService indoorPositionService = binder.getService();
-            indoorPositionService.register(measurement -> {
+            AtomicInteger i= new AtomicInteger();
+            SatelliteInfoList s = new SatelliteInfoList();
 
-                // Do something
-                String text = "x=" + measurement.getX() + "\n" +
-                        "y=" + measurement.getY() + "\n" +
-                        "z=" + measurement.getZ() + "\n" +
-                        "vx=" + measurement.getVx() + "\n" +
-                        "vy=" + measurement.getVy() + "\n" +
-                        "vz=" + measurement.getVz() + "\n" +
-                        "mapID=m" + measurement.getMapID() + "\n" +
-                        "Mode=" + measurement.getMode() + "\n" + "GNSS\n" + measurement.getText();
-                mIsIndoor = measurement.getMode() == IPSMeasurement.Mode.INDOOR;
-//                System.out.println(text);
-                Log.d("galaxy", text);
+            indoorPositionService.setInfoAndStartup(s,mCurrentConfig);
+            indoorPositionService.register(measurement -> {
+                i.getAndIncrement();
+                        String text = "\n result"+
+                                "\nx," +measurement.getX()+ "," +
+                                "y," + measurement.getY() + "\n" +
+                                "z=" + measurement.getZ() + "\n" +
+                                "vx=" + measurement.getVx() + "\n" +
+                                "vy=" + measurement.getVy() + "\n" +
+                                "state=" + measurement.getVz() + "\n" +
+                                "mapID=" + measurement.getMapID() + "\n" +
+                                "Mode=" + measurement.getMode() + "\n" + "定位次数:"+i+"\n" + measurement.getText();
+                        Log.i("result", text);
+                        updateMapConfig(measurement.getMapID()+"");
                 new Handler(Looper.getMainLooper()).post(() -> {
 
                     if (mCallback != null) {
                         mCallback.onReceive(measurement);
                     }
                 });
-            });
+                });
             mBound = true;
-        }
+            }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {

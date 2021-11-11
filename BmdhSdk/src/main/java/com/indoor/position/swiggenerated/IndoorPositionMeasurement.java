@@ -44,6 +44,102 @@ public class IndoorPositionMeasurement {
     IPSJNI.IndoorPositionMeasurement_setDescription(swigCPtr, this, desc);
   }
 
+  public void setL5_x(double value) {
+    IPSJNI.IndoorPositionMeasurement_L5_x_set(swigCPtr, this, value);
+  }
+
+  public double getL5_x() {
+    return IPSJNI.IndoorPositionMeasurement_L5_x_get(swigCPtr, this);
+  }
+
+  public void setL5_y(double value) {
+    IPSJNI.IndoorPositionMeasurement_L5_y_set(swigCPtr, this, value);
+  }
+
+  public double getL5_y() {
+    return IPSJNI.IndoorPositionMeasurement_L5_y_get(swigCPtr, this);
+  }
+
+  public void setL5_z(double value) {
+    IPSJNI.IndoorPositionMeasurement_L5_z_set(swigCPtr, this, value);
+  }
+
+  public double getL5_z() {
+    return IPSJNI.IndoorPositionMeasurement_L5_z_get(swigCPtr, this);
+  }
+
+  public void setL5locatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_L5locatestate_set(swigCPtr, this, value);
+  }
+
+  public int getL5locatestate() {
+    return IPSJNI.IndoorPositionMeasurement_L5locatestate_get(swigCPtr, this);
+  }
+
+  public void setL1_x(double value) {
+    IPSJNI.IndoorPositionMeasurement_L1_x_set(swigCPtr, this, value);
+  }
+
+  public double getL1_x() {
+    return IPSJNI.IndoorPositionMeasurement_L1_x_get(swigCPtr, this);
+  }
+
+  public void setL1_y(double value) {
+    IPSJNI.IndoorPositionMeasurement_L1_y_set(swigCPtr, this, value);
+  }
+
+  public double getL1_y() {
+    return IPSJNI.IndoorPositionMeasurement_L1_y_get(swigCPtr, this);
+  }
+
+  public void setL1_z(double value) {
+    IPSJNI.IndoorPositionMeasurement_L1_z_set(swigCPtr, this, value);
+  }
+
+  public double getL1_z() {
+    return IPSJNI.IndoorPositionMeasurement_L1_z_get(swigCPtr, this);
+  }
+
+  public void setL1locatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_L1locatestate_set(swigCPtr, this, value);
+  }
+
+  public int getL1locatestate() {
+    return IPSJNI.IndoorPositionMeasurement_L1locatestate_get(swigCPtr, this);
+  }
+
+  public void setL5kf_x(double value) {
+    IPSJNI.IndoorPositionMeasurement_L5kf_x_set(swigCPtr, this, value);
+  }
+
+  public double getL5kf_x() {
+    return IPSJNI.IndoorPositionMeasurement_L5kf_x_get(swigCPtr, this);
+  }
+
+  public void setL5kf_y(double value) {
+    IPSJNI.IndoorPositionMeasurement_L5kf_y_set(swigCPtr, this, value);
+  }
+
+  public double getL5kf_y() {
+    return IPSJNI.IndoorPositionMeasurement_L5kf_y_get(swigCPtr, this);
+  }
+
+  public void setL5kf_z(double value) {
+    IPSJNI.IndoorPositionMeasurement_L5kf_z_set(swigCPtr, this, value);
+  }
+
+  public double getL5kf_z() {
+    return IPSJNI.IndoorPositionMeasurement_L5kf_z_get(swigCPtr, this);
+  }
+
+  public void setL5kflocatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_L5kflocatestate_set(swigCPtr, this, value);
+  }
+
+  public int getL5kflocatestate() {
+    return IPSJNI.IndoorPositionMeasurement_L5kflocatestate_get(swigCPtr, this);
+  }
+
   public IndoorPositionMeasurement(double x, double y, double z, boolean s, int locatestate) {
     this(IPSJNI.new_IndoorPositionMeasurement(x, y, z, s, locatestate), true);
   }

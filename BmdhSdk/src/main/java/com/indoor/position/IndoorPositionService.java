@@ -15,8 +15,14 @@ import androidx.annotation.Keep;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.indoor.BmdhIndoorConfig;
+import com.google.gson.Gson;
+import com.indoor.MapConfig;
 import com.indoor.position.swiggenerated.IndoorPositionProcessor;
+import com.indoor.position.swiggenerated.Inputparameter;
+import com.indoor.position.swiggenerated.SatelliteInfo;
+import com.indoor.position.swiggenerated.SatelliteInfoList;
+
+import lombok.SneakyThrows;
 
 /**
  * {@link IndoorPositionService} is {@link Service} implementation that is used for accurate
@@ -43,14 +49,7 @@ public class IndoorPositionService extends Service {
         ipsCoreRunner.addCallbacks(callback);
     }
 
-    /**
-     * 修正坐标
-     *
-     * @param mapId 设备端返回的MapId
-     */
-    public void setIpsCoreRunnerFixCoord(String mapId){
-        ipsCoreRunner.initConfig(BmdhIndoorConfig.getFixCoord(mapId));
-    }
+    @SneakyThrows
     @Override
     public void onCreate() {
         super.onCreate();
@@ -66,10 +65,6 @@ public class IndoorPositionService extends Service {
                 new SensorProcessor(sensorManager),
                 new BluetoothProcessor(bluetoothManager),
                 new IndoorPositionProcessor());
-        boolean gnssStatus = ipsCoreRunner.startUp();
-        if (gnssStatus) {
-            Log.d("IndoorPositionService", "GNSS module startup successfully.");
-        }
     }
 
     public void onDestroy() {
@@ -77,6 +72,26 @@ public class IndoorPositionService extends Service {
         Log.d("IndoorPositionService", "Service onDestroy");
         ipsCoreRunner.tearDown();
     }
+
+    public void setInfoAndStartup(SatelliteInfoList s, MapConfig.DataConfigDTO mCurrentConfig) {
+        for(MapConfig.DataConfigDTO.SatelliteInfoDTO satelliteInfo:mCurrentConfig.getSatelliteInfo()){
+            s.add(new SatelliteInfo(satelliteInfo.getX(),satelliteInfo.getY(),satelliteInfo.getZ(),satelliteInfo.getSvid()));
+        }
+        double[] roomCenter=new double[]{mCurrentConfig.getRoomCenter().getX(),mCurrentConfig.getRoomCenter().getY()};
+        double[] threshold_x_y=new double[]{mCurrentConfig.getThresholdXY().getX(),mCurrentConfig.getThresholdXY().getY()};
+        double[] gmocratorfixcoord=new double[]{mCurrentConfig.getGmocratorfixcoord().getX(),mCurrentConfig.getGmocratorfixcoord().getY(),mCurrentConfig.getGmocratorfixcoord().getZ()};
+        double[] fixedCoor= new double[]{mCurrentConfig.getFixedCoor().getX(),mCurrentConfig.getFixedCoor().getY(),mCurrentConfig.getFixedCoor().getZ()};
+        Inputparameter inputparameter=new Inputparameter(roomCenter,threshold_x_y,false,null,fixedCoor);
+        ipsCoreRunner.updateInputData(s,inputparameter);
+        ipsCoreRunner.updateMercatorConvertParameter(gmocratorfixcoord,mCurrentConfig.getGdegZfixcoord());
+        ipsCoreRunner.updateSatelliteSerial(mCurrentConfig.getListL1().toArray(new Integer[mCurrentConfig.getListL1().size()]),mCurrentConfig.getListL5().toArray(new Integer[mCurrentConfig.getListL5().size()]),mCurrentConfig.getIspsemodeL1());
+        Log.d("IndoorPositionService", "setInfoAndStartup");
+        boolean gnssStatus = ipsCoreRunner.startUp();
+        if (gnssStatus) {
+            Log.d("IndoorPositionService", "GNSS module startup successfully.");
+        }
+    }
+
 
     @Nullable
     @Override
