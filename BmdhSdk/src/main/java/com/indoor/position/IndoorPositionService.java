@@ -82,7 +82,7 @@ public class IndoorPositionService extends Service {
         double[] threshold_x_y=new double[]{mCurrentConfig.getThresholdXY().getX(),mCurrentConfig.getThresholdXY().getY()};
         double[] gmocratorfixcoord=new double[]{mCurrentConfig.getGmocratorfixcoord().getX(),mCurrentConfig.getGmocratorfixcoord().getY(),mCurrentConfig.getGmocratorfixcoord().getZ()};
         double[] fixedCoor= new double[]{mCurrentConfig.getFixedCoor().getX(),mCurrentConfig.getFixedCoor().getY(),mCurrentConfig.getFixedCoor().getZ()};
-        Inputparameter inputparameter=new Inputparameter(roomCenter,threshold_x_y,false,null,fixedCoor);
+        Inputparameter inputparameter=new Inputparameter(roomCenter,threshold_x_y,false,new double[]{},fixedCoor);
         ipsCoreRunner.updateInputData(s,inputparameter);
         ipsCoreRunner.updateMercatorConvertParameter(gmocratorfixcoord,mCurrentConfig.getGdegZfixcoord());
         ipsCoreRunner.updateSatelliteSerial(mCurrentConfig.getListL1().toArray(new Integer[mCurrentConfig.getListL1().size()]),mCurrentConfig.getListL5().toArray(new Integer[mCurrentConfig.getListL5().size()]),mCurrentConfig.getIspsemodeL1());

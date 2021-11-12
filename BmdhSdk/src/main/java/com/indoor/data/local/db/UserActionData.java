@@ -22,8 +22,8 @@ public class UserActionData {
     public String uuid;
     @ColumnInfo(name = "mapId")
     public String mapId;
-    @ColumnInfo(name = "fNum")
-    public String fNum;
+    @ColumnInfo(name = "floorNum")
+    public String floorNum;
     @ColumnInfo(name = "positionState")
     public int positionState;
     @ColumnInfo(name = "locationAltitude")
