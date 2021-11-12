@@ -73,7 +73,8 @@ public class IndoorPositionService extends Service {
         ipsCoreRunner.tearDown();
     }
 
-    public void setInfoAndStartup(SatelliteInfoList s, MapConfig.DataConfigDTO mCurrentConfig) {
+    public void setInfoAndStartup(MapConfig.DataConfigDTO mCurrentConfig) {
+        SatelliteInfoList s=new SatelliteInfoList();
         for(MapConfig.DataConfigDTO.SatelliteInfoDTO satelliteInfo:mCurrentConfig.getSatelliteInfo()){
             s.add(new SatelliteInfo(satelliteInfo.getX(),satelliteInfo.getY(),satelliteInfo.getZ(),satelliteInfo.getSvid()));
         }
@@ -90,6 +91,7 @@ public class IndoorPositionService extends Service {
         if (gnssStatus) {
             Log.d("IndoorPositionService", "GNSS module startup successfully.");
         }
+
     }
 
 

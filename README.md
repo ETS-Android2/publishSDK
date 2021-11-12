@@ -8,7 +8,7 @@
 
 Android 室内定位SDK 是一套地图开发调用接口，开发者和使用者可以轻松地在自己的Android应用获取室内定位位置服务相关的功能，
 主要包括室内伪卫星和相关传感器原始数据获取和处理，室内定位位置计算（算法JNI定义、算法实现），室内定位位置返回等；
-定位SDK以Service形式运行；Android 室内定位SDK，支持搭载Android Nougat（7.0）以上手机设备。
+定位SDK以Service形式运行；Android 室内定位SDK，支持搭载Android 8.0以上手机设备。
   
 ## 工程配置
 * AndroidManifest.xml的application标签下添加服务端下发的APIKey

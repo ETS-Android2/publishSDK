@@ -82,11 +82,11 @@ public class MapConfig {
         @Data
         public static class SatelliteInfoDTO {
             @SerializedName("x")
-            private Double x;
+            private double x;
             @SerializedName("y")
-            private Double y;
+            private double y;
             @SerializedName("z")
-            private Double z;
+            private double z;
             @SerializedName("svid")
             private Integer svid;
         }
