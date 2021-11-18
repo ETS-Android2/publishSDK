@@ -16,6 +16,7 @@ import androidx.annotation.RequiresApi;
 
 import com.indoor.position.IPSMeasurement;
 import com.indoor.position.IndoorPositionService;
+import com.indoor.utils.KLog;
 import com.indoor.utils.Utils;
 
 public class BmdhIndoorSDK {
@@ -67,7 +68,7 @@ public class BmdhIndoorSDK {
      *
      * @param callback 获取到位置信息后的回调，1s回调一次
      */
-    public void startIndoorLocation(String mapId,IPSMeasurement.Callback callback){
+    public void startIndoorLocation(long mapId,IPSMeasurement.Callback callback){
         if(mBmdhIndoorStrategy==null){
             Log.e(TAG,"mBmdhIndoorStrategy is null");
             return;
@@ -93,6 +94,7 @@ public class BmdhIndoorSDK {
      */
     public void init(Context context, BmdhIndoorConfig bmdhIndoorConfig) {
         mContext=context.getApplicationContext();
+        KLog.init(true);
         Utils.init(context);
         mBmdhIndoorConfig=bmdhIndoorConfig;
         mBmdhIndoorStrategy=new BmdhIndoorStrategy(mContext);

@@ -3,8 +3,10 @@ package com.indoor.data.local;
 
 import com.indoor.data.local.db.UserActionData;
 
+import java.util.List;
+
 /**
- * Created by goldze on 2019/3/26.
+ * Created by Aaron on 2021/11/18.
  */
 public interface LocalDataSource {
 
@@ -37,5 +39,10 @@ public interface LocalDataSource {
     /**
      * delete 用户数据
      */
-    void deleteUserActionDataToDB(UserActionData ...userActionDatas);
+    void deleteUserActionDataToDB(List<UserActionData> userActionDatas);
+
+    /**
+     * get 指定数量的的用户数据
+     */
+    List<UserActionData>  getLimitUserActionDataToDB();
 }

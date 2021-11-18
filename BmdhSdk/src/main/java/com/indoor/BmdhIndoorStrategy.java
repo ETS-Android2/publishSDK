@@ -36,8 +36,8 @@ public class BmdhIndoorStrategy {
     private boolean mIsIndoor = false;
     private IPSMeasurement.Callback mCallback;
     private MapConfig mapConfig;
-    private String currentMapConfigID = "";
-    private String currentSetMapID = "";
+    private long currentMapConfigID = 0;
+    private long currentSetMapID =0;
     private MapConfig.DataConfigDTO mCurrentConfig;
 
     public BmdhIndoorStrategy(Context context) {
@@ -101,7 +101,7 @@ public class BmdhIndoorStrategy {
      *
      * @param callback
      */
-    public void startIndoorSdkLocate(String mapID, IPSMeasurement.Callback callback) {
+    public void startIndoorSdkLocate(long mapID, IPSMeasurement.Callback callback) {
 //        if(!mVerifySucess){
 //            Log.e(TAG,"认证不通过，请确保APIKey正确");
 //            return;
@@ -115,20 +115,20 @@ public class BmdhIndoorStrategy {
         Log.d(TAG, "Service start status is " + status);
     }
 
-    private void updateMapConfig(String mapID, IndoorPositionService indoorPositionService) {
+    private void updateMapConfig(long mapID, IndoorPositionService indoorPositionService) {
 
         if (mapConfig == null) {
             Log.e(TAG, "mapConfig==null,data err...");
             return;
         }
-        if (currentMapConfigID.equals(mapID)) {
+        if (currentMapConfigID==mapID) {
             return;
         }
         Log.d(TAG, "updateMapConfig...");
         currentMapConfigID = mapID;
         mCurrentConfig = mapConfig.getDataConfig().get(0);
         for (MapConfig.DataConfigDTO dataConfig : mapConfig.getDataConfig()) {
-            if (dataConfig.getMapid().equals(currentMapConfigID)) {
+            if (dataConfig.getMapid()==currentMapConfigID) {
                 mCurrentConfig = dataConfig;
                 break;
             }
@@ -147,12 +147,11 @@ public class BmdhIndoorStrategy {
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
-            Log.d("ServiceConnection", "Service connected!");
-            Log.d("ServiceConnection", "Service connected!");
+            Log.e(TAG, "Service connected!");
             IndoorPositionService.LocalBinder binder = (IndoorPositionService.LocalBinder) service;
             IndoorPositionService indoorPositionService = binder.getService();
             AtomicInteger i = new AtomicInteger();
-            updateMapConfig(currentSetMapID + "", indoorPositionService);
+            updateMapConfig(currentSetMapID, indoorPositionService);
             indoorPositionService.register(measurement -> {
                 i.getAndIncrement();
                 String text = "\n result" +
@@ -164,8 +163,8 @@ public class BmdhIndoorStrategy {
                         "state=" + measurement.getVz() + "\n" +
                         "mapID=" + measurement.getMapID() + "\n" +
                         "Mode=" + measurement.getMode() + "\n" + "定位次数:" + i + "\n" + measurement.getText();
-                Log.i("result", text);
-                updateMapConfig(measurement.getMapID() + "", indoorPositionService);
+                Log.i(TAG, "result is "+text);
+                updateMapConfig(measurement.getMapID(), indoorPositionService);
                 new Handler(Looper.getMainLooper()).post(() -> {
 
                     if (mCallback != null) {

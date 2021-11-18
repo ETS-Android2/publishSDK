@@ -13,7 +13,7 @@ public interface UserActionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public  void  insertActionData(UserActionData... userActionData);
     @Delete
-    public void deleteActionData(UserActionData... userActionData);
+    public void deleteActionData(List<UserActionData> userActionDatas);
 
     @Query("SELECT * FROM UserActionData limit 0,10")
     public List<UserActionData> getTopTenActionData();

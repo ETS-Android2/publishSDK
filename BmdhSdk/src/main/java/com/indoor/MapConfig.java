@@ -18,7 +18,7 @@ public class MapConfig {
     @Data
     public static class DataConfigDTO {
         @SerializedName("mapid")
-        private String mapid;
+        private Long mapid;
         @SerializedName("SatelliteInfo")
         private List<SatelliteInfoDTO> satelliteInfo;
         @SerializedName("roomCenter")
@@ -34,7 +34,7 @@ public class MapConfig {
         @SerializedName("gmocratorfixcoord")
         private GmocratorfixcoordDTO gmocratorfixcoord;
         @SerializedName("gdegZfixcoord")
-        private Integer gdegZfixcoord;
+        private Double gdegZfixcoord;
         @SerializedName("ispsemodeL1")
         private Boolean ispsemodeL1;
 
@@ -51,18 +51,18 @@ public class MapConfig {
         @Data
         public static class ThresholdXYDTO {
             @SerializedName("x")
-            private Integer x;
+            private Double x;
             @SerializedName("y")
-            private Integer y;
+            private Double y;
         }
 
         @NoArgsConstructor
         @Data
         public static class FixedCoorDTO {
             @SerializedName("x")
-            private Integer x;
+            private Double x;
             @SerializedName("y")
-            private Integer y;
+            private Double y;
             @SerializedName("z")
             private Double z;
         }
@@ -71,22 +71,22 @@ public class MapConfig {
         @Data
         public static class GmocratorfixcoordDTO {
             @SerializedName("x")
-            private Integer x;
+            private Double x;
             @SerializedName("y")
-            private Integer y;
+            private Double y;
             @SerializedName("z")
-            private Integer z;
+            private Double z;
         }
 
         @NoArgsConstructor
         @Data
         public static class SatelliteInfoDTO {
             @SerializedName("x")
-            private double x;
+            private Double x;
             @SerializedName("y")
-            private double y;
+            private Double y;
             @SerializedName("z")
-            private double z;
+            private Double z;
             @SerializedName("svid")
             private Integer svid;
         }

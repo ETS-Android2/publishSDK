@@ -26,8 +26,8 @@ public class UserActionData {
     public String floorNum;
     @ColumnInfo(name = "positionState")
     public int positionState;
-    @ColumnInfo(name = "locationAltitude")
-    public String locationAltitude;
+    @ColumnInfo(name = "locationLatitude")
+    public String locationLatitude;
     @ColumnInfo(name = "locationLongitude")
     public String locationLongitude;
     @ColumnInfo(name = "ipsInfo")

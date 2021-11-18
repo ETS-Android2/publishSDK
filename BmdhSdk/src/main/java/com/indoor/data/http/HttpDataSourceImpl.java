@@ -2,14 +2,24 @@ package com.indoor.data.http;
 
 import com.indoor.data.entity.author.AuthorResponse;
 import com.indoor.data.http.service.IndoorApiService;
+import com.indoor.data.local.db.UserActionData;
+import com.indoor.utils.KLog;
+import com.indoor.utils.RxUtils;
+
+import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 
 /**
  * Created by Aaron on  2019/3/26.
  */
 public class HttpDataSourceImpl implements HttpDataSource {
 
+    private static final String TAG="HttpDataSourceImpl";
     private volatile static HttpDataSourceImpl INSTANCE = null;
     private IndoorApiService mIndoorApiService;
     public static HttpDataSourceImpl getInstance(IndoorApiService apiService) {
@@ -17,6 +27,7 @@ public class HttpDataSourceImpl implements HttpDataSource {
             synchronized (HttpDataSourceImpl.class) {
                 if (INSTANCE == null) {
                     INSTANCE = new HttpDataSourceImpl(apiService);
+
                 }
             }
         }
@@ -31,10 +42,11 @@ public class HttpDataSourceImpl implements HttpDataSource {
         this.mIndoorApiService = mIndoorApiService;
     }
 
-//    @Override
-//    public Observable<BaseResponse<AuthorResponse>> uploadAction() {
-//        return mIndoorApiService.uploadAction();
-//    }
+
+    @Override
+    public Observable<BaseResponse<String>> submitLogRecord(List<UserActionData> userActionDatas) {
+       return mIndoorApiService.submitLogRecord(userActionDatas);
+    }
 
     @Override
     public Observable<BaseResponse<AuthorResponse>> verifyAuth(String apikey, String packagename, String sha1) {

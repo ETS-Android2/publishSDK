@@ -18,7 +18,7 @@ private static final String TAG = "MainActivity";
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         BmdhIndoorSDK.getInstance().init(this, new BmdhIndoorConfig.Builder().DEAFULT(this).build());
-        BmdhIndoorSDK.getInstance().startIndoorLocation("2",this);
+        BmdhIndoorSDK.getInstance().startIndoorLocation(2,this);
     }
 
     @Override
