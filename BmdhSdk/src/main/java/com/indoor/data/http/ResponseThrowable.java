@@ -12,4 +12,8 @@ public class ResponseThrowable extends Exception {
         super(throwable);
         this.code = code;
     }
+
+    public ResponseThrowable(int code) {
+        this.code = code;
+    }
 }

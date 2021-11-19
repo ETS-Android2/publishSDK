@@ -26,8 +26,8 @@ public class IPSMeasurement implements Parcelable {
     double vy;
     double vz;
     long mapID;
-    Mode mode;
-    enum Mode {
+    public Mode mode;
+    public enum Mode {
         PARK,
         INDOOR,
         OUTDOOR

@@ -10,13 +10,18 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
 import com.google.gson.Gson;
+import com.indoor.data.DataInjection;
+import com.indoor.data.SDKRepository;
+import com.indoor.data.entity.author.AuthorData;
 import com.indoor.position.IPSMeasurement;
 import com.indoor.position.IndoorPositionService;
+import com.indoor.utils.RxAppUtils;
 import com.indoor.utils.RxFileUtils;
 
 import java.io.BufferedReader;
@@ -39,10 +44,14 @@ public class BmdhIndoorStrategy {
     private long currentMapConfigID = 0;
     private long currentSetMapID =0;
     private MapConfig.DataConfigDTO mCurrentConfig;
+    private SDKRepository sdkRepository;
+    private IPSMeasurement ipsMeasurement=null;
+    private IBmdhNaviManager.INaviIndoorStateChangeListener iNaviIndoorStateChangeListener=null;
 
     public BmdhIndoorStrategy(Context context) {
         mContext = context;
         MAPCONFIG_PATH = context.getExternalCacheDir().getAbsolutePath() + File.separator + CONFIG_NAME;
+        sdkRepository= DataInjection.provideDemoRepository(context);
     }
 
     public boolean ismBound() {
@@ -61,17 +70,31 @@ public class BmdhIndoorStrategy {
         this.mIsIndoor = mIsIndoor;
     }
 
-    public void verifyAPIKey() {
+
+    public void setIndoorOrOutdoorChangedListener(IBmdhNaviManager.INaviIndoorStateChangeListener listener){
+        iNaviIndoorStateChangeListener=listener;
+    }
+
+    public void verifySDK(IBmdhNaviManager.IInitSDKListener iInitSDKListener) {
         ApplicationInfo appInfo = null;
         String key = "";
         try {
             appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
-            appInfo.metaData.getString(META_DATA);
+            key =appInfo.metaData.getString(META_DATA);
         } catch (Exception e) {
             Log.e(TAG, "get meta-data error:", e);
+            return;
         }
         Log.d(TAG, " APIkey == " + key);
+        if(TextUtils.isEmpty(key)){
+            Log.e(TAG, "apikey cannot be null");
+        }
         //TODO 网络请求，获取认证结果
+        AuthorData authorData=new AuthorData();
+        authorData.setPackageName(mContext.getPackageName());
+        authorData.setShaCode(RxAppUtils.getAppSignatureSHA1(mContext));
+        authorData.setAuthCode(key);
+        mVerifySucess=sdkRepository.verrifySDK(authorData,iInitSDKListener);
     }
 
     public String getMapConfig(Context context, String fileName) {
@@ -95,17 +118,22 @@ public class BmdhIndoorStrategy {
         return Result;
     }
 
-
+    /**
+     * 销毁当前SDK资源
+     */
+    public void clearData(){
+       sdkRepository.destroyInstance();
+    }
     /**
      * 启动室内定位服务
      *
      * @param callback
      */
     public void startIndoorSdkLocate(long mapID, IPSMeasurement.Callback callback) {
-//        if(!mVerifySucess){
-//            Log.e(TAG,"认证不通过，请确保APIKey正确");
-//            return;
-//        }
+        if(!mVerifySucess&& TextUtils.isEmpty(sdkRepository.getToken())){
+            Log.e(TAG,"verify failed...");
+            return;
+        }
         currentSetMapID = mapID;
         Gson gson = new Gson();
         mapConfig = gson.fromJson(getMapConfig(mContext, "indoor_data"), MapConfig.class);
@@ -163,6 +191,17 @@ public class BmdhIndoorStrategy {
                         "state=" + measurement.getVz() + "\n" +
                         "mapID=" + measurement.getMapID() + "\n" +
                         "Mode=" + measurement.getMode() + "\n" + "定位次数:" + i + "\n" + measurement.getText();
+                if(iNaviIndoorStateChangeListener!=null){
+                    if(ipsMeasurement==null){
+                       iNaviIndoorStateChangeListener.onIndoorOrOutdoorChanged(measurement.getMode());
+                    }else{
+                        if(!ipsMeasurement.mode.equals(measurement.getMode())){
+                            iNaviIndoorStateChangeListener.onIndoorOrOutdoorChanged(measurement.getMode());
+                        }
+
+                    }
+                }
+
                 Log.i(TAG, "result is "+text);
                 updateMapConfig(measurement.getMapID(), indoorPositionService);
                 new Handler(Looper.getMainLooper()).post(() -> {

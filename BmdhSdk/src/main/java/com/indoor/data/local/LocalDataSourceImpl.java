@@ -18,6 +18,7 @@ public class LocalDataSourceImpl implements LocalDataSource {
     private static final String KEY_TOKEN = "Token";
     private volatile static SDKDataBase mSDKDataBase;
     private volatile static String  DATABASE_PATH;
+    private volatile String token="";
     public static LocalDataSourceImpl getInstance(Context context) {
         if (INSTANCE == null) {
             synchronized (LocalDataSourceImpl.class) {
@@ -43,7 +44,7 @@ public class LocalDataSourceImpl implements LocalDataSource {
 
     @Override
     public void saveToken(String token) {
-
+        this.token=token;
     }
 
     @Override
@@ -53,7 +54,7 @@ public class LocalDataSourceImpl implements LocalDataSource {
 
     @Override
     public String getToken() {
-        return null;
+        return this.token;
     }
 
     @Override
@@ -67,7 +68,7 @@ public class LocalDataSourceImpl implements LocalDataSource {
     }
 
     @Override
-    public void deleteUserActionDataToDB(List<UserActionData> userActionDatas) {
+    public  void deleteUserActionDataToDB(List<UserActionData> userActionDatas) {
         mSDKDataBase.getUserActionDao().deleteActionData(userActionDatas);
     }
 

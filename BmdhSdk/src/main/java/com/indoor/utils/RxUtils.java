@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.fragment.app.Fragment;
 
 import com.indoor.data.http.BaseResponse;
+import com.indoor.data.http.ExceptionHandle;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;

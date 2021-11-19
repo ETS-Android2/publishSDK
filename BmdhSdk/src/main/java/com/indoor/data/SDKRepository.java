@@ -1,24 +1,25 @@
 package com.indoor.data;
 
-import android.content.Context;
+import static jsinterop.base.Js.typeof;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
-import com.indoor.data.entity.author.AuthorResponse;
+import com.indoor.IBmdhNaviManager;
+import com.indoor.data.entity.author.AuthorData;
 import com.indoor.data.http.BaseResponse;
 import com.indoor.data.http.ExceptionHandle;
 import com.indoor.data.http.HttpDataSource;
+import com.indoor.data.http.HttpDataSourceImpl;
 import com.indoor.data.http.HttpStatus;
 import com.indoor.data.http.ResponseThrowable;
 import com.indoor.data.local.LocalDataSource;
+import com.indoor.data.local.LocalDataSourceImpl;
 import com.indoor.data.local.db.UserActionData;
 import com.indoor.utils.KLog;
 import com.indoor.utils.RxUtils;
 
 import java.util.List;
-
-import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
@@ -28,12 +29,13 @@ import io.reactivex.functions.Consumer;
  * MVVM的Model层，统一模块的数据仓库，包含网络数据和本地数据（一个应用可以有多个Repositor）
  * Created by Aaron on 2021/11/18.
  */
-public class SDKRepository implements HttpDataSource, LocalDataSource {
+public class SDKRepository{
     private static final String TAG="HttpDataSourceImpl";
     private volatile static SDKRepository INSTANCE = null;
     private final HttpDataSource mHttpDataSource;
 
     private final LocalDataSource mLocalDataSource;
+
     private volatile static CompositeDisposable mCompositeDisposable;
     private SDKRepository(@NonNull HttpDataSource httpDataSource,
                           @NonNull LocalDataSource localDataSource) {
@@ -56,11 +58,16 @@ public class SDKRepository implements HttpDataSource, LocalDataSource {
 
 
 
-    @VisibleForTesting
-    public static void destroyInstance() {
+    public  void destroyInstance() {
         if (mCompositeDisposable != null) {
             mCompositeDisposable.clear(); // clear时网络请求会随即cancel
             mCompositeDisposable = null;
+        }
+        if(mLocalDataSource instanceof LocalDataSourceImpl) {
+           ((LocalDataSourceImpl) mLocalDataSource).destroyInstance();
+        }
+        if(mHttpDataSource instanceof HttpDataSourceImpl) {
+            ((HttpDataSourceImpl) mHttpDataSource).destroyInstance();
         }
         INSTANCE = null;
     }
@@ -78,8 +85,8 @@ public class SDKRepository implements HttpDataSource, LocalDataSource {
      * 提交日志信息
      */
     public void submitDefineLogRecord(){
-        List<UserActionData> userActionDatas=getLimitUserActionDataToDB();
-                addSubscribe(INSTANCE.submitLogRecord(userActionDatas).compose(RxUtils.schedulersTransformer()) //线程调度
+        List<UserActionData> userActionDatas=mLocalDataSource.getLimitUserActionDataToDB();
+                addSubscribe(mHttpDataSource.submitLogRecord(userActionDatas).compose(RxUtils.schedulersTransformer()) //线程调度
                         .doOnSubscribe((Consumer<Disposable>) disposable -> {
                             KLog.e(TAG,"doOnSubscribe ... ");
                         })
@@ -89,8 +96,15 @@ public class SDKRepository implements HttpDataSource, LocalDataSource {
                                 KLog.e(TAG,"submitLogRecord result is "+entity.getResult());
                                 if(entity.getResultCode()== HttpStatus.STATUS_CODE_SUCESS){
                                     KLog.d(TAG,"submit sucess...size is "+userActionDatas.size()+"; first recoredId is "+userActionDatas.get(0).recoredId);
-                                    deleteUserActionDataToDB(userActionDatas);
-                                    submitDefineLogRecord();
+                                    synchronized(SDKRepository.INSTANCE){
+                                        if(mLocalDataSource.getLimitUserActionDataToDB().size()>0){
+                                            mLocalDataSource.deleteUserActionDataToDB(userActionDatas);
+                                            submitDefineLogRecord();
+                                        }else{
+                                            KLog.d(TAG,"nothing to submit...");
+                                        }
+
+                                    }
                                 } else if(HttpStatus.isTokenErr(entity.getResultCode())){
                                     //TODOhandle token error
                                     KLog.e(TAG,"submit failed,statusCode is other condition...");
@@ -112,37 +126,46 @@ public class SDKRepository implements HttpDataSource, LocalDataSource {
                         }));
     }
 
+    public String getToken(){
+        return mLocalDataSource.getToken();
+    }
+
 
     /**
      * SDK鉴权
      *
-     * @param context
+     * @param authorData
      * @return
      */
-    public boolean verrifySDK(Context context){
-        boolean result= false;
-        addSubscribe(INSTANCE.verifyAuth("","","").compose(RxUtils.schedulersTransformer()) //线程调度
+    public boolean verrifySDK(AuthorData authorData, IBmdhNaviManager.IInitSDKListener iInitSDKListener){
+        final boolean[] result = {false};
+        addSubscribe(mHttpDataSource.verifyAuth(authorData).compose(RxUtils.schedulersTransformer()) //线程调度
                 .doOnSubscribe((Consumer<Disposable>) disposable -> {
                     KLog.e(TAG,"doOnSubscribe ... ");
                 })
-                .subscribe(new Consumer<BaseResponse<AuthorResponse>>(){
+                .subscribe(new Consumer<BaseResponse<String>>(){
                     @Override
-                    public void accept(BaseResponse<AuthorResponse> entity) throws Exception {
+                    public void accept(BaseResponse<String> entity)throws Exception {
                         KLog.e(TAG,"submitLogRecord result is "+entity.getResult());
-                        if(entity.getResultCode()== HttpStatus.STATUS_CODE_SUCESS){
-
-                        } else if(HttpStatus.isTokenErr(entity.getResultCode())){
+                        int code=entity.getResultCode();
+                        if(code== HttpStatus.STATUS_CODE_SUCESS){
+                            String token=entity.getResult();
+                            KLog.e(TAG,"token is :"+token);
+                            mLocalDataSource.saveToken(token);
+                            submitDefineLogRecord();
+                            result[0] =true;
+                        } else {
                             //TODOhandle token error
-                            KLog.e(TAG,"submit failed,statusCode is other condition...");
-                        }else{
-                            KLog.e(TAG,"statusCode is other condition...");
+                            iInitSDKListener.initFailed(code,entity.getResultMsg());
+                            KLog.e(TAG,"handle Error:"+ExceptionHandle.getHttpExceptionMsg(code));
                         }
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
                         ResponseThrowable e= ExceptionHandle.handleException(throwable);
-                        KLog.e(TAG+" accept error :",e.getMessage());
+                        iInitSDKListener.initFailed(e.code,e.message);
+                        KLog.e(TAG+" accept error :",e.message);
                     }
                 }, new Action() {
                     @Override
@@ -150,56 +173,7 @@ public class SDKRepository implements HttpDataSource, LocalDataSource {
                         KLog.e(TAG," http request complete...");
                     }
                 }));
-       return result;
+       return result[0];
     }
 
-
-    @Override
-    public Observable<BaseResponse<String>> submitLogRecord(List<UserActionData> userActionDatas) {
-//        List<UserActionData> actionDataList= mSDKDataBase.getUserActionDao().getTopTenActionData();
-
-        return mHttpDataSource.submitLogRecord(userActionDatas);
-    }
-
-    @Override
-    public Observable<BaseResponse<AuthorResponse>> verifyAuth(String apikey, String packagename, String sha1) {
-        return mHttpDataSource.verifyAuth(apikey, packagename, sha1);
-    }
-
-    @Override
-    public void saveToken(String token) {
-
-    }
-
-    @Override
-    public void saveUnitId(int unitId) {
-
-    }
-
-    @Override
-    public String getToken() {
-        return null;
-    }
-
-    @Override
-    public int getUnitID() {
-        return 0;
-    }
-
-
-
-    @Override
-    public void saveUserActionDataToDB(UserActionData userActionData) {
-        mLocalDataSource.saveUserActionDataToDB(userActionData);
-    }
-
-    @Override
-    public void deleteUserActionDataToDB(List<UserActionData> userActionDatas) {
-        mLocalDataSource.deleteUserActionDataToDB(userActionDatas);
-    }
-
-    @Override
-    public List<UserActionData> getLimitUserActionDataToDB() {
-        return mLocalDataSource.getLimitUserActionDataToDB();
-    }
 }

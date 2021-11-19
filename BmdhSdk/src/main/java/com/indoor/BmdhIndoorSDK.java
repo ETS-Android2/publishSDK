@@ -92,13 +92,13 @@ public class BmdhIndoorSDK {
      * @param context 环境上下文
      * @param bmdhIndoorConfig 使用默认值则传入BmdhIndoorConfig.DEFAULT
      */
-    public void init(Context context, BmdhIndoorConfig bmdhIndoorConfig) {
+    public void init(Context context, BmdhIndoorConfig bmdhIndoorConfig, IBmdhNaviManager.IInitSDKListener iInitSDKListener) {
         mContext=context.getApplicationContext();
         KLog.init(true);
         Utils.init(context);
         mBmdhIndoorConfig=bmdhIndoorConfig;
         mBmdhIndoorStrategy=new BmdhIndoorStrategy(mContext);
-
+        mBmdhIndoorStrategy.verifySDK(iInitSDKListener);
     }
 
 
@@ -129,7 +129,7 @@ public class BmdhIndoorSDK {
      * 销毁当前SDK资源
      */
     public void exitSDK(){
-
+        mBmdhIndoorStrategy.clearData();
     }
 
 

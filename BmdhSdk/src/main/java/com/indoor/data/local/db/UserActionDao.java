@@ -6,6 +6,7 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Dao
@@ -13,7 +14,7 @@ public interface UserActionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public  void  insertActionData(UserActionData... userActionData);
     @Delete
-    public void deleteActionData(List<UserActionData> userActionDatas);
+    public void deleteActionData(List<UserActionData> userActionData);
 
     @Query("SELECT * FROM UserActionData limit 0,10")
     public List<UserActionData> getTopTenActionData();

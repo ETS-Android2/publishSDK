@@ -1,5 +1,6 @@
 package com.indoor.data.http;
 
+import com.indoor.data.entity.author.AuthorData;
 import com.indoor.data.entity.author.AuthorResponse;
 import com.indoor.data.http.service.IndoorApiService;
 import com.indoor.data.local.db.UserActionData;
@@ -13,6 +14,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import retrofit2.http.Body;
 
 /**
  * Created by Aaron on  2019/3/26.
@@ -27,7 +29,6 @@ public class HttpDataSourceImpl implements HttpDataSource {
             synchronized (HttpDataSourceImpl.class) {
                 if (INSTANCE == null) {
                     INSTANCE = new HttpDataSourceImpl(apiService);
-
                 }
             }
         }
@@ -49,7 +50,7 @@ public class HttpDataSourceImpl implements HttpDataSource {
     }
 
     @Override
-    public Observable<BaseResponse<AuthorResponse>> verifyAuth(String apikey, String packagename, String sha1) {
-        return mIndoorApiService.verifyAuth(apikey, packagename, sha1);
+    public Observable<BaseResponse<String>> verifyAuth(AuthorData authorData) {
+        return mIndoorApiService.verifyAuth(authorData);
     }
 }

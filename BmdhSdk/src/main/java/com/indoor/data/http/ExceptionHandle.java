@@ -30,29 +30,7 @@ public class ExceptionHandle {
         if (e instanceof HttpException) {
             HttpException httpException = (HttpException) e;
             ex = new ResponseThrowable(e, ERROR.HTTP_ERROR);
-            switch (httpException.code()) {
-                case UNAUTHORIZED:
-                    ex.message = "操作未授权";
-                    break;
-                case FORBIDDEN:
-                    ex.message = "请求被拒绝";
-                    break;
-                case NOT_FOUND:
-                    ex.message = "资源不存在";
-                    break;
-                case REQUEST_TIMEOUT:
-                    ex.message = "服务器执行超时";
-                    break;
-                case INTERNAL_SERVER_ERROR:
-                    ex.message = "服务器内部错误";
-                    break;
-                case SERVICE_UNAVAILABLE:
-                    ex.message = "服务器不可用";
-                    break;
-                default:
-                    ex.message = "网络错误";
-                    break;
-            }
+            ex.message=getHttpExceptionMsg(httpException.code());
             return ex;
         } else if (e instanceof JsonParseException
                 || e instanceof JSONException
@@ -85,6 +63,35 @@ public class ExceptionHandle {
             ex.message = "未知错误";
             return ex;
         }
+    }
+
+    public static String getHttpExceptionMsg(int code){
+
+        String exceptionMsg="";
+        switch (code) {
+            case UNAUTHORIZED:
+                exceptionMsg = "操作未授权";
+                break;
+            case FORBIDDEN:
+                exceptionMsg = "请求被拒绝";
+                break;
+            case NOT_FOUND:
+                exceptionMsg = "资源不存在";
+                break;
+            case REQUEST_TIMEOUT:
+                exceptionMsg = "服务器执行超时";
+                break;
+            case INTERNAL_SERVER_ERROR:
+                exceptionMsg = "服务器内部错误";
+                break;
+            case SERVICE_UNAVAILABLE:
+                exceptionMsg = "服务器不可用";
+                break;
+            default:
+                exceptionMsg = "网络错误";
+                break;
+        }
+        return exceptionMsg;
     }
 
 

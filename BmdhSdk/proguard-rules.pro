@@ -23,5 +23,6 @@
 -optimizationpasses 5
 -keep public class com.indoor.position.IndoorPositionService
 -keep public class com.indoor.position.IPSMeasurement
+-keep public class com.indoor.BmdhIndoorSDK
 -keepattributes *Annotation*
 -keepattributes Signature
