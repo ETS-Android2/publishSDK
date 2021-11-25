@@ -23,6 +23,48 @@
 -optimizationpasses 5
 -keep public class com.indoor.position.IndoorPositionService
 -keep public class com.indoor.position.IPSMeasurement
--keep public class com.indoor.BmdhIndoorSDK
+-keep public class com.indoor.AzimuthIndoorSDK
+-keep public class com.indoor.AzimuthIndoorConfig
+-keep public class com.indoor.IAzimuthNaviManager
+#retrofit
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keepattributes Signature
+-keepattributes Exceptions
+
+#gson
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class sun.misc.Unsafe { *; }
+-keep class com.google.gson.stream.** { *; }
+-keep class com.sunloto.shandong.bean.** { *; }
+
+#glide
+-keep public class * implements com.bumptech.glide.module.AppGlideModule
+-keep public class * implements com.bumptech.glide.module.LibraryGlideModule
+-keep class com.bumptech.glide.** { *; }
+-keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
+    **[] $VALUES;
+    public *;
+}
+
+#glide-transformations
+-keep class jp.wasabeef.glide.transformations.** {*;}
+-dontwarn jp.wasabeef.glide.transformations.**
+
+#okhttp
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class com.squareup.okhttp.** { *; }
+-keep interface com.squareup.okhttp.** { *; }
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
+-dontwarn com.squareup.okhttp.**
+-dontwarn okhttp3.**
+-dontwarn okio.**
+
+#RxJava RxAndroid
+-dontwarn rx.*
+-dontwarn sun.misc.**
 -keepattributes *Annotation*
 -keepattributes Signature

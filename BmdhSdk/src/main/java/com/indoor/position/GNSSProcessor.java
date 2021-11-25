@@ -5,10 +5,12 @@ import android.location.GnssClock;
 import android.location.GnssMeasurement;
 import android.location.GnssMeasurementsEvent;
 import android.location.GnssStatus;
+import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
@@ -34,7 +36,16 @@ import java.util.stream.Stream;
  */
 @RequiresApi(api = Build.VERSION_CODES.O)
 class GNSSProcessor {
-    private static final LocationListener DEFAULT_LOCATION_LISTENER = location -> {
+    private static final LocationListener DEFAULT_LOCATION_LISTENER =new LocationListener() {
+        @Override
+        public void onLocationChanged(@NonNull Location location) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(@NonNull String provider) {
+
+        }
     };
     private static final String LOG_TAG = "GNSSProcessor";
     private static final String LOCATION_SERVICE_PROVIDER = "gps";

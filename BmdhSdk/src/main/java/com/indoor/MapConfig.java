@@ -1,19 +1,22 @@
 package com.indoor;
 
+import androidx.annotation.Keep;
+
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.List;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+@Keep
 @NoArgsConstructor
 @Data
-public class MapConfig {
+public class MapConfig implements Serializable {
 
     @SerializedName("dataConfig")
     private List<DataConfigDTO> dataConfig;
-
+    @Keep
     @NoArgsConstructor
     @Data
     public static class DataConfigDTO {
@@ -37,7 +40,7 @@ public class MapConfig {
         private Double gdegZfixcoord;
         @SerializedName("ispsemodeL1")
         private Boolean ispsemodeL1;
-
+        @Keep
         @NoArgsConstructor
         @Data
         public static class RoomCenterDTO {
@@ -46,7 +49,7 @@ public class MapConfig {
             @SerializedName("y")
             private Double y;
         }
-
+        @Keep
         @NoArgsConstructor
         @Data
         public static class ThresholdXYDTO {
@@ -55,7 +58,7 @@ public class MapConfig {
             @SerializedName("y")
             private Double y;
         }
-
+        @Keep
         @NoArgsConstructor
         @Data
         public static class FixedCoorDTO {
@@ -66,7 +69,7 @@ public class MapConfig {
             @SerializedName("z")
             private Double z;
         }
-
+        @Keep
         @NoArgsConstructor
         @Data
         public static class GmocratorfixcoordDTO {
@@ -77,7 +80,7 @@ public class MapConfig {
             @SerializedName("z")
             private Double z;
         }
-
+        @Keep
         @NoArgsConstructor
         @Data
         public static class SatelliteInfoDTO {

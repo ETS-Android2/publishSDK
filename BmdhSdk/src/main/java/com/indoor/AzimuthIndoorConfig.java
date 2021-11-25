@@ -3,9 +3,11 @@ package com.indoor;
 import android.content.Context;
 import android.text.TextUtils;
 
-import java.util.HashMap;
+import androidx.annotation.Keep;
 
-public class BmdhIndoorConfig {
+import java.util.HashMap;
+@Keep
+public class AzimuthIndoorConfig {
     public static final HashMap<String,double[]> FIX_COORD =new HashMap<>();
     private static final String MAP_50078="50078";
 
@@ -21,7 +23,7 @@ public class BmdhIndoorConfig {
         FIX_COORD.put(MAP_50078,new double[]{13536740.8542030,3649358.63141886,3.4312});
     }
 
-    private BmdhIndoorConfig(Context var1, String var2, String var3, String var4, String var5, String var6) {
+    private AzimuthIndoorConfig(Context var1, String var2, String var3, String var4, String var5, String var6) {
         this.context = var1;
         this.sdcardRootPath = var2;
         this.appFolderName = var3;
@@ -41,6 +43,7 @@ public class BmdhIndoorConfig {
         return deafult;
     }
 
+    @Keep
     public static class Builder {
         private Context context;
         private String sdcardRootPath;
@@ -52,54 +55,54 @@ public class BmdhIndoorConfig {
         public Builder() {
         }
 
-        public BmdhIndoorConfig.Builder DEAFULT(Context var1) {
+        public AzimuthIndoorConfig.Builder DEAFULT(Context var1) {
             this.context = var1;
             return this;
         }
 
-        public BmdhIndoorConfig.Builder context(Context var1) {
+        public AzimuthIndoorConfig.Builder context(Context var1) {
             this.context = var1;
             return this;
         }
 
-        public BmdhIndoorConfig.Builder sdcardRootPath(String var1) {
+        public AzimuthIndoorConfig.Builder sdcardRootPath(String var1) {
             this.sdcardRootPath = var1;
             return this;
         }
 
-        public BmdhIndoorConfig.Builder appFolderName(String var1) {
+        public AzimuthIndoorConfig.Builder appFolderName(String var1) {
             this.appFolderName = var1;
             return this;
         }
 
-        public BmdhIndoorConfig.Builder appId(String var1) {
+        public AzimuthIndoorConfig.Builder appId(String var1) {
             this.appId = var1;
             return this;
         }
 
-        public BmdhIndoorConfig.Builder appKey(String var1) {
+        public AzimuthIndoorConfig.Builder appKey(String var1) {
             this.appKey = var1;
             return this;
         }
 
-        public BmdhIndoorConfig.Builder secretKey(String var1) {
+        public AzimuthIndoorConfig.Builder secretKey(String var1) {
             this.secretKey = var1;
             return this;
         }
 
-        public BmdhIndoorConfig build() {
-            BmdhIndoorConfig.Builder var10002 = this;
-            BmdhIndoorConfig.Builder var10003 = this;
-            BmdhIndoorConfig.Builder var10004 = this;
-            BmdhIndoorConfig.Builder var10005 = this;
-            BmdhIndoorConfig.Builder var10006 = this;
+        public AzimuthIndoorConfig build() {
+            AzimuthIndoorConfig.Builder var10002 = this;
+            AzimuthIndoorConfig.Builder var10003 = this;
+            AzimuthIndoorConfig.Builder var10004 = this;
+            AzimuthIndoorConfig.Builder var10005 = this;
+            AzimuthIndoorConfig.Builder var10006 = this;
             Context var6 = this.context;
             String var1 = var10006.sdcardRootPath;
             String var2 = var10005.appFolderName;
             String var3 = var10004.appId;
             String var4 = var10003.appKey;
             String var5 = var10002.secretKey;
-            return new BmdhIndoorConfig(var6, var1, var2, var3, var4, var5);
+            return new AzimuthIndoorConfig(var6, var1, var2, var3, var4, var5);
         }
     }
 }

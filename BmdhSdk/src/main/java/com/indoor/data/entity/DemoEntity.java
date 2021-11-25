@@ -3,12 +3,14 @@ package com.indoor.data.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Keep;
+
 import java.util.List;
 
 /**
  * Created by Aaron on  2017/7/17.
  */
-
+@Keep
 public class DemoEntity {
     private String nextPageToken;
     private String prevPageToken;
@@ -64,7 +66,7 @@ public class DemoEntity {
     public void setItems(List<ItemsEntity> items) {
         this.items = items;
     }
-
+    @Keep
     public static class ItemsEntity implements Parcelable{
         private String detail;
         private String href;

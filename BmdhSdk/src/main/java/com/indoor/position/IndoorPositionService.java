@@ -74,10 +74,12 @@ public class IndoorPositionService extends Service {
     }
 
     public void setInfoAndStartup(MapConfig.DataConfigDTO mCurrentConfig) {
+        Log.d("IndoorPositionService", "setInfoAndStartup begin");
         SatelliteInfoList s=new SatelliteInfoList();
         for(MapConfig.DataConfigDTO.SatelliteInfoDTO satelliteInfo:mCurrentConfig.getSatelliteInfo()){
             s.add(new SatelliteInfo(satelliteInfo.getX(),satelliteInfo.getY(),satelliteInfo.getZ(),satelliteInfo.getSvid()));
         }
+        Log.d("IndoorPositionService", "setInfoAndStartup SatelliteInfoDTO");
         double[] roomCenter=new double[]{mCurrentConfig.getRoomCenter().getX(),mCurrentConfig.getRoomCenter().getY()};
         double[] threshold_x_y=new double[]{mCurrentConfig.getThresholdXY().getX(),mCurrentConfig.getThresholdXY().getY()};
         double[] gmocratorfixcoord=new double[]{mCurrentConfig.getGmocratorfixcoord().getX(),mCurrentConfig.getGmocratorfixcoord().getY(),mCurrentConfig.getGmocratorfixcoord().getZ()};

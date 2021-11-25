@@ -1,15 +1,17 @@
 package com.indoor;
 
+import androidx.annotation.Keep;
+
 import com.indoor.position.IPSMeasurement;
-
-public interface IBmdhNaviManager {
-
+@Keep
+public interface IAzimuthNaviManager {
+    @Keep
     public interface INaviIndoorStateChangeListener{
         public abstract void onIndoorOrOutdoorChanged(IPSMeasurement.Mode mode);
         public abstract void onFloorChanged();
         public abstract void onServiceDisconnected();
     }
-
+    @Keep
     public interface IInitSDKListener{
         void onAuthResult(int code, String message);
 

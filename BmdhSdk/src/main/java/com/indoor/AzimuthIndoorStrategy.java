@@ -30,7 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class BmdhIndoorStrategy {
+public class AzimuthIndoorStrategy {
     private static final String TAG = "BmdhIndoorStrategy";
     private static final String META_DATA = "com.bmdh.indoorsdk.API_KEY";
     private static String MAPCONFIG_PATH;
@@ -44,14 +44,14 @@ public class BmdhIndoorStrategy {
     private long currentMapConfigID = 0;
     private long currentSetMapID =0;
     private MapConfig.DataConfigDTO mCurrentConfig;
-    private SDKRepository sdkRepository;
+//    private SDKRepository sdkRepository;
     private IPSMeasurement ipsMeasurement=null;
-    private IBmdhNaviManager.INaviIndoorStateChangeListener iNaviIndoorStateChangeListener=null;
+    private IAzimuthNaviManager.INaviIndoorStateChangeListener iNaviIndoorStateChangeListener=null;
 
-    public BmdhIndoorStrategy(Context context) {
+    public AzimuthIndoorStrategy(Context context) {
         mContext = context;
         MAPCONFIG_PATH = context.getExternalCacheDir().getAbsolutePath() + File.separator + CONFIG_NAME;
-        sdkRepository= DataInjection.provideDemoRepository(context);
+//        sdkRepository= DataInjection.provideDemoRepository(context);
     }
 
     public boolean ismBound() {
@@ -71,11 +71,11 @@ public class BmdhIndoorStrategy {
     }
 
 
-    public void setIndoorOrOutdoorChangedListener(IBmdhNaviManager.INaviIndoorStateChangeListener listener){
+    public void setIndoorOrOutdoorChangedListener(IAzimuthNaviManager.INaviIndoorStateChangeListener listener){
         iNaviIndoorStateChangeListener=listener;
     }
 
-    public void verifySDK(IBmdhNaviManager.IInitSDKListener iInitSDKListener) {
+    public void verifySDK(IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
         ApplicationInfo appInfo = null;
         String key = "";
         try {
@@ -94,23 +94,21 @@ public class BmdhIndoorStrategy {
         authorData.setPackageName(mContext.getPackageName());
         authorData.setShaCode(RxAppUtils.getAppSignatureSHA1(mContext));
         authorData.setAuthCode(key);
-        mVerifySucess=sdkRepository.verrifySDK(authorData,iInitSDKListener);
+//        sdkRepository.verrifySDK(authorData,iInitSDKListener);
+        mVerifySucess=true;
     }
 
     public String getMapConfig(Context context, String fileName) {
         String Result = "";
         try {
-            if (RxFileUtils.isFileExists(MAPCONFIG_PATH)) {
-                Result = RxFileUtils.readFile2String(MAPCONFIG_PATH, "UTF-8");
-            } else {
+            if (!RxFileUtils.isFileExists(MAPCONFIG_PATH)) {
                 InputStream in = context.getResources().getAssets().open(CONFIG_NAME);
                 InputStreamReader inputReader = new InputStreamReader(in);
                 RxFileUtils.copyFile(in, new File(MAPCONFIG_PATH));
-                BufferedReader bufReader = new BufferedReader(inputReader);
-                String line = "";
-                while ((line = bufReader.readLine()) != null)
-                    Result += line;
+                Result = RxFileUtils.readFile2String(MAPCONFIG_PATH, "UTF-8");
+
             }
+            Result = RxFileUtils.readFile2String(MAPCONFIG_PATH, "UTF-8");
             return Result;
         } catch (Exception e) {
             e.printStackTrace();
@@ -122,7 +120,7 @@ public class BmdhIndoorStrategy {
      * 销毁当前SDK资源
      */
     public void clearData(){
-       sdkRepository.destroyInstance();
+//       sdkRepository.destroyInstance();
     }
     /**
      * 启动室内定位服务
@@ -130,17 +128,17 @@ public class BmdhIndoorStrategy {
      * @param callback
      */
     public void startIndoorSdkLocate(long mapID, IPSMeasurement.Callback callback) {
-        if(!mVerifySucess&& TextUtils.isEmpty(sdkRepository.getToken())){
-            Log.e(TAG,"verify failed...");
-            return;
-        }
+//        if(!mVerifySucess&& TextUtils.isEmpty(sdkRepository.getToken())){
+//            Log.e(TAG,"verify failed...");
+//            return;
+//        }
         currentSetMapID = mapID;
         Gson gson = new Gson();
         mapConfig = gson.fromJson(getMapConfig(mContext, "indoor_data"), MapConfig.class);
         mCallback = callback;
         Intent intent = new Intent(mContext, IndoorPositionService.class);
         boolean status = mContext.bindService(intent, connection, Context.BIND_AUTO_CREATE);
-        Log.d(TAG, "Service start status is " + status);
+        Log.d(TAG, "Service start status is " + status+";mapConfig is null=="+(mapConfig == null));
     }
 
     private void updateMapConfig(long mapID, IndoorPositionService indoorPositionService) {
@@ -158,9 +156,11 @@ public class BmdhIndoorStrategy {
         for (MapConfig.DataConfigDTO dataConfig : mapConfig.getDataConfig()) {
             if (dataConfig.getMapid()==currentMapConfigID) {
                 mCurrentConfig = dataConfig;
+                Log.d(TAG, "updateMapConfig mCurrentConfig...");
                 break;
             }
         }
+        Log.d(TAG, "mCurrentConfig is null == "+(mCurrentConfig==null));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             indoorPositionService.setInfoAndStartup(mCurrentConfig);
         } else {

@@ -1,11 +1,8 @@
 package com.indoor.data;
 
-import static jsinterop.base.Js.typeof;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 
-import com.indoor.IBmdhNaviManager;
+import com.indoor.IAzimuthNaviManager;
 import com.indoor.data.entity.author.AuthorData;
 import com.indoor.data.http.BaseResponse;
 import com.indoor.data.http.ExceptionHandle;
@@ -127,7 +124,8 @@ public class SDKRepository{
     }
 
     public String getToken(){
-        return mLocalDataSource.getToken();
+        return "fortest";
+//        return mLocalDataSource.getToken();
     }
 
 
@@ -137,7 +135,7 @@ public class SDKRepository{
      * @param authorData
      * @return
      */
-    public boolean verrifySDK(AuthorData authorData, IBmdhNaviManager.IInitSDKListener iInitSDKListener){
+    public boolean verrifySDK(AuthorData authorData, IAzimuthNaviManager.IInitSDKListener iInitSDKListener){
         final boolean[] result = {false};
         addSubscribe(mHttpDataSource.verifyAuth(authorData).compose(RxUtils.schedulersTransformer()) //线程调度
                 .doOnSubscribe((Consumer<Disposable>) disposable -> {
