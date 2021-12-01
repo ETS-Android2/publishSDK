@@ -44,6 +44,38 @@ public class IndoorPositionMeasurement {
     IPSJNI.IndoorPositionMeasurement_setDescription(swigCPtr, this, desc);
   }
 
+  public void setX(double value) {
+    IPSJNI.IndoorPositionMeasurement_x_set(swigCPtr, this, value);
+  }
+
+  public double getX() {
+    return IPSJNI.IndoorPositionMeasurement_x_get(swigCPtr, this);
+  }
+
+  public void setY(double value) {
+    IPSJNI.IndoorPositionMeasurement_y_set(swigCPtr, this, value);
+  }
+
+  public double getY() {
+    return IPSJNI.IndoorPositionMeasurement_y_get(swigCPtr, this);
+  }
+
+  public void setZ(double value) {
+    IPSJNI.IndoorPositionMeasurement_z_set(swigCPtr, this, value);
+  }
+
+  public double getZ() {
+    return IPSJNI.IndoorPositionMeasurement_z_get(swigCPtr, this);
+  }
+
+  public void setLocatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_locatestate_set(swigCPtr, this, value);
+  }
+
+  public int getLocatestate() {
+    return IPSJNI.IndoorPositionMeasurement_locatestate_get(swigCPtr, this);
+  }
+
   public void setL5_x(double value) {
     IPSJNI.IndoorPositionMeasurement_L5_x_set(swigCPtr, this, value);
   }

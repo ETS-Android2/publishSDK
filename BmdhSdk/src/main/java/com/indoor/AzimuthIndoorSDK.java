@@ -1,8 +1,6 @@
 package com.indoor;
 
 import android.content.Context;
-import android.util.Log;
-
 import androidx.annotation.Keep;
 
 import com.indoor.position.IPSMeasurement;
@@ -37,7 +35,7 @@ public class AzimuthIndoorSDK {
     /**
      * 获取SDK版本号
      *
-     * @return
+     * @return 返回SDK版本号
      */
     public String getSDKVersion() {
         return SDK_VERSION;
@@ -46,11 +44,11 @@ public class AzimuthIndoorSDK {
     /**
      * 当前是否在室内
      *
-     * @return
+     * @return 当前是否在室内
      */
     public boolean isCurrentIndoor() {
         if (mAzimuthIndoorStrategy == null) {
-            Log.e(TAG, "mAzimuthIndoorStrategy is null");
+            KLog.e(TAG, "mAzimuthIndoorStrategy is null");
             return false;
         }
         return mAzimuthIndoorStrategy.ismIsIndoor();
@@ -63,7 +61,7 @@ public class AzimuthIndoorSDK {
      */
     public void startIndoorLocation(long mapId, IPSMeasurement.Callback callback) {
         if (mAzimuthIndoorStrategy == null) {
-            Log.e(TAG, "mAzimuthIndoorStrategy is null");
+            KLog.e(TAG, "mAzimuthIndoorStrategy is null");
             return;
         }
         mAzimuthIndoorStrategy.startIndoorSdkLocate(mapId, callback);
@@ -81,15 +79,15 @@ public class AzimuthIndoorSDK {
 
     /**
      * 初始化SDK环境，
-     *
+     *a
      * @param context          环境上下文
-     * @param bmdhIndoorConfig 使用默认值则传入BmdhIndoorConfig.DEFAULT
+     * @param azimuthIndoorConfig 使用默认值则传入AzimuthIndoorConfig.DEFAULT
      */
-    public void init(Context context, AzimuthIndoorConfig bmdhIndoorConfig, IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
+    public void init(Context context, AzimuthIndoorConfig azimuthIndoorConfig, IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
         mContext = context.getApplicationContext();
         KLog.init(true);
         Utils.init(context);
-        mAzimuthIndoorConfig = bmdhIndoorConfig;
+        mAzimuthIndoorConfig = azimuthIndoorConfig;
         mAzimuthIndoorStrategy = new AzimuthIndoorStrategy(mContext);
 //        mAzimuthIndoorStrategy.verifySDK(iInitSDKListener);
     }

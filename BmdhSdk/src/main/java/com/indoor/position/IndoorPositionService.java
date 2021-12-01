@@ -15,7 +15,6 @@ import androidx.annotation.Keep;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.google.gson.Gson;
 import com.indoor.MapConfig;
 import com.indoor.position.swiggenerated.IndoorPositionProcessor;
 import com.indoor.position.swiggenerated.Inputparameter;
@@ -63,6 +62,7 @@ public class IndoorPositionService extends Service {
         ipsCoreRunner = new IPSCoreRunner(
                 new GNSSProcessor(locationManager),
                 new SensorProcessor(sensorManager),
+                new StepProcessor(sensorManager),
                 new BluetoothProcessor(bluetoothManager),
                 new IndoorPositionProcessor());
     }
@@ -84,16 +84,13 @@ public class IndoorPositionService extends Service {
         double[] threshold_x_y=new double[]{mCurrentConfig.getThresholdXY().getX(),mCurrentConfig.getThresholdXY().getY()};
         double[] gmocratorfixcoord=new double[]{mCurrentConfig.getGmocratorfixcoord().getX(),mCurrentConfig.getGmocratorfixcoord().getY(),mCurrentConfig.getGmocratorfixcoord().getZ()};
         double[] fixedCoor= new double[]{mCurrentConfig.getFixedCoor().getX(),mCurrentConfig.getFixedCoor().getY(),mCurrentConfig.getFixedCoor().getZ()};
-        Inputparameter inputparameter=new Inputparameter(roomCenter,threshold_x_y,false,new double[]{},fixedCoor);
+        Inputparameter inputparameter=new Inputparameter(roomCenter,threshold_x_y,false,new double[]{},fixedCoor,new double[]{});
         ipsCoreRunner.updateInputData(s,inputparameter);
-        ipsCoreRunner.updateMercatorConvertParameter(gmocratorfixcoord,mCurrentConfig.getGdegZfixcoord());
-        ipsCoreRunner.updateSatelliteSerial(mCurrentConfig.getListL1().toArray(new Integer[mCurrentConfig.getListL1().size()]),mCurrentConfig.getListL5().toArray(new Integer[mCurrentConfig.getListL5().size()]),mCurrentConfig.getIspsemodeL1());
         Log.d("IndoorPositionService", "setInfoAndStartup");
         boolean gnssStatus = ipsCoreRunner.startUp();
         if (gnssStatus) {
             Log.d("IndoorPositionService", "GNSS module startup successfully.");
         }
-
     }
 
 

@@ -88,7 +88,6 @@ public class IPSMeasurement implements Parcelable {
      * Register {@link Callback} in {@link IndoorPositionService}, the callback will be called when
      * new position data is received.
      */
-    @Keep
     public interface Callback {
         /**
          * TODO: docstring, add usage here.

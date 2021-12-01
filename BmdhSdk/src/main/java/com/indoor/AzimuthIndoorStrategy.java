@@ -16,18 +16,14 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.google.gson.Gson;
-import com.indoor.data.DataInjection;
-import com.indoor.data.SDKRepository;
 import com.indoor.data.entity.author.AuthorData;
 import com.indoor.position.IPSMeasurement;
 import com.indoor.position.IndoorPositionService;
+import com.indoor.utils.KLog;
 import com.indoor.utils.RxAppUtils;
 import com.indoor.utils.RxFileUtils;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AzimuthIndoorStrategy {
@@ -82,12 +78,13 @@ public class AzimuthIndoorStrategy {
             appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
             key =appInfo.metaData.getString(META_DATA);
         } catch (Exception e) {
-            Log.e(TAG, "get meta-data error:", e);
+            KLog.e(TAG, "get meta-data error:"+e.getMessage());
             return;
         }
-        Log.d(TAG, " APIkey == " + key);
+        KLog.d(TAG, " APIkey == " + key);
         if(TextUtils.isEmpty(key)){
-            Log.e(TAG, "apikey cannot be null");
+            KLog.e(TAG, "apikey cannot be null");
+            return;
         }
         //TODO 网络请求，获取认证结果
         AuthorData authorData=new AuthorData();
@@ -100,10 +97,13 @@ public class AzimuthIndoorStrategy {
 
     public String getMapConfig(Context context, String fileName) {
         String Result = "";
+        if(context==null){
+            KLog.e(TAG,"getMapConfig failed,you should init SDK first...");
+            return null;
+        }
         try {
             if (!RxFileUtils.isFileExists(MAPCONFIG_PATH)) {
                 InputStream in = context.getResources().getAssets().open(CONFIG_NAME);
-                InputStreamReader inputReader = new InputStreamReader(in);
                 RxFileUtils.copyFile(in, new File(MAPCONFIG_PATH));
                 Result = RxFileUtils.readFile2String(MAPCONFIG_PATH, "UTF-8");
 
@@ -111,7 +111,7 @@ public class AzimuthIndoorStrategy {
             Result = RxFileUtils.readFile2String(MAPCONFIG_PATH, "UTF-8");
             return Result;
         } catch (Exception e) {
-            e.printStackTrace();
+            KLog.e(TAG,e.getMessage());
         }
         return Result;
     }
@@ -135,28 +135,32 @@ public class AzimuthIndoorStrategy {
         currentSetMapID = mapID;
         Gson gson = new Gson();
         mapConfig = gson.fromJson(getMapConfig(mContext, "indoor_data"), MapConfig.class);
+        if(mapConfig==null){
+            KLog.e(TAG,"MapConfig is null,please ensure that the SDK is operating properly according to the steps");
+            return;
+        }
         mCallback = callback;
         Intent intent = new Intent(mContext, IndoorPositionService.class);
         boolean status = mContext.bindService(intent, connection, Context.BIND_AUTO_CREATE);
-        Log.d(TAG, "Service start status is " + status+";mapConfig is null=="+(mapConfig == null));
+        KLog.d(TAG, "Service start status is " + status+";mapConfig is null=="+(mapConfig == null));
     }
 
     private void updateMapConfig(long mapID, IndoorPositionService indoorPositionService) {
 
         if (mapConfig == null) {
-            Log.e(TAG, "mapConfig==null,data err...");
+            KLog.e(TAG, "mapConfig==null,data err...");
             return;
         }
         if (currentMapConfigID==mapID) {
             return;
         }
-        Log.d(TAG, "updateMapConfig...");
+        KLog.d(TAG, "updateMapConfig...");
         currentMapConfigID = mapID;
         mCurrentConfig = mapConfig.getDataConfig().get(0);
         for (MapConfig.DataConfigDTO dataConfig : mapConfig.getDataConfig()) {
             if (dataConfig.getMapid()==currentMapConfigID) {
                 mCurrentConfig = dataConfig;
-                Log.d(TAG, "updateMapConfig mCurrentConfig...");
+                KLog.d(TAG, "updateMapConfig mCurrentConfig...");
                 break;
             }
         }
@@ -164,9 +168,9 @@ public class AzimuthIndoorStrategy {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             indoorPositionService.setInfoAndStartup(mCurrentConfig);
         } else {
-            Log.e(TAG, "currentVersion is too low, is " + Build.VERSION.SDK_INT);
+            KLog.e(TAG, "currentVersion is too low, is " + Build.VERSION.SDK_INT);
         }
-        Log.d(TAG, "mCurrentConfig is null == " + (mCurrentConfig == null));
+        KLog.d(TAG, "mCurrentConfig is null == " + (mCurrentConfig == null));
     }
 
     private final ServiceConnection connection = new ServiceConnection() {
@@ -175,7 +179,7 @@ public class AzimuthIndoorStrategy {
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
-            Log.e(TAG, "Service connected!");
+            KLog.e(TAG, "Service connected!");
             IndoorPositionService.LocalBinder binder = (IndoorPositionService.LocalBinder) service;
             IndoorPositionService indoorPositionService = binder.getService();
             AtomicInteger i = new AtomicInteger();
@@ -202,7 +206,7 @@ public class AzimuthIndoorStrategy {
                     }
                 }
 
-                Log.i(TAG, "result is "+text);
+                KLog.i(TAG, "result is "+text);
                 updateMapConfig(measurement.getMapID(), indoorPositionService);
                 new Handler(Looper.getMainLooper()).post(() -> {
 

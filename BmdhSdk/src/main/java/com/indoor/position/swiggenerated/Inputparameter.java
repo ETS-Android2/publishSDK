@@ -76,6 +76,14 @@ public class Inputparameter {
     return IPSJNI.Inputparameter_fixedCoor_get(swigCPtr, this);
   }
 
+  public void setStepjingwei(double[] value) {
+    IPSJNI.Inputparameter_stepjingwei_set(swigCPtr, this, value);
+  }
+
+  public double[] getStepjingwei() {
+    return IPSJNI.Inputparameter_stepjingwei_get(swigCPtr, this);
+  }
+
   public void setroomCenter(double[] p) {
     IPSJNI.Inputparameter_setroomCenter(swigCPtr, this, p);
   }
@@ -96,8 +104,12 @@ public class Inputparameter {
     IPSJNI.Inputparameter_setfixedCoor(swigCPtr, this, p);
   }
 
-  public Inputparameter(double[] proomCenter, double[] pthreshold_x_y, boolean pbluetoothCheckResult, double[] pbluetoothReferLocation, double[] pfixedCoor) {
-    this(IPSJNI.new_Inputparameter(proomCenter, pthreshold_x_y, pbluetoothCheckResult, pbluetoothReferLocation, pfixedCoor), true);
+  public void setstepjingwei(double[] p) {
+    IPSJNI.Inputparameter_setstepjingwei(swigCPtr, this, p);
+  }
+
+  public Inputparameter(double[] proomCenter, double[] pthreshold_x_y, boolean pbluetoothCheckResult, double[] pbluetoothReferLocation, double[] pfixedCoor, double[] pstepjingwei) {
+    this(IPSJNI.new_Inputparameter(proomCenter, pthreshold_x_y, pbluetoothCheckResult, pbluetoothReferLocation, pfixedCoor, pstepjingwei), true);
   }
 
 }
