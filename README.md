@@ -3,10 +3,13 @@
 *公司版权所有，违者必究*
 
 ***
+## 安装插件 Lombok
+![img_2.png](img_2.png)
 ## 替换so库
 ![img.png](img.png)
 ## 生成AAR包
 ![img_1.png](img_1.png)
+***
 ## Android室内定位SDK简介
 
 Android 室内定位SDK 是一套地图开发调用接口，开发者和使用者可以轻松地在自己的Android应用获取室内定位位置服务相关的功能，
