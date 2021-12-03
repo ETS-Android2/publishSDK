@@ -50,20 +50,22 @@ class IPSCoreRunner {
     /** 配置参数  **/
 	double[] fixedCoor= new double[]{0,0,1.0};
 	boolean ispsemodeL1=true;
-/*    Integer[] listL1={1, 2, 3, 4,5,6, 7, 8};
-    Integer[] listL5={1, 2, 3, 4,5,6, 7, 8};*/
-    Integer[] listL1={1, 3, 24, 25,26,27, 30, 32};
-    Integer[] listL5={1, 3, 24, 25,26,27, 30, 32};
+    Integer[] listL1={1, 2, 3, 4,5,6, 7, 8,9,10,11,12,13,14,15,16};
+    Integer[] listL5={1, 2, 3, 4,5,6, 7, 8,9,10,11,12,13,14,15,16};
+/*    Integer[] listL1={1, 3, 24, 25,26,27, 30, 32};
+    Integer[] listL5={1, 3, 24, 25,26,27, 30, 32};*/
 /*    double[] gmocratorfixcoord=new double[]{0,0,0};
     double gdegZfixcoord=0;*/
-   double[] roomCenter=new double[]{10,8};
+    double[] roomCenter=new double[]{10,8};
     double[] threshold_x_y=new double[]{15,10};
     Map<String, List<Double>> bluetoothLabel;
-    double jingweideg=292./180*Math.PI;
+    double jingweideg=90/180*Math.PI;
     /** 配置参数  **/
 
-    double[] gmocratorfixcoord=new double[]{12699424.335,2577637.635,0};
-    double gdegZfixcoord=0;
+ /*   double[] gmocratorfixcoord=new double[]{12699424.335,2577637.635,0};
+    double gdegZfixcoord=0;*/
+    double[] gmocratorfixcoord=new double[]{13536740.6489254,3649357.91954317,0};
+    double gdegZfixcoord=4.3907;
 
 
 
