@@ -26,7 +26,10 @@ import com.indoor.position.IndoorPositionService;
 import com.indoor.utils.KLog;
 import com.indoor.utils.RxAppUtils;
 import com.indoor.utils.RxEncryptTool;
+import com.indoor.utils.RxFileTool;
 import com.indoor.utils.RxFileUtils;
+import com.indoor.utils.Utils;
+
 import java.io.File;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,6 +57,7 @@ public class AzimuthIndoorStrategy {
     public AzimuthIndoorStrategy(Context context) {
         mContext = context;
         MAPCONFIG_FOLDER_PATH =getMapConfigPath();
+        RxFileUtils.createOrExistsDir(MAPCONFIG_FOLDER_PATH);
         sdkRepository= DataInjection.provideDemoRepository(context);
     }
 
@@ -79,65 +83,66 @@ public class AzimuthIndoorStrategy {
     }
 
     public void verifySDK(IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
-        ApplicationInfo appInfo = null;
-        String key = "";
-        try {
-            appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
-            key =appInfo.metaData.getString(META_DATA);
-        } catch (Exception e) {
-            KLog.e(TAG, "get meta-data error:"+e.getMessage());
-            return;
-        }
-        KLog.d(TAG, " APIkey == " + key);
+//        ApplicationInfo appInfo = null;
+//        String key = "";
+//        try {
+//            appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
+//            key =appInfo.metaData.getString(META_DATA);
+//        } catch (Exception e) {
+//            KLog.e(TAG, "get meta-data error:"+e.getMessage());
+//            return;
+//        }
+//        KLog.d(TAG, " APIkey == " + key);
 
-        //TODO 网络请求，获取认证结果
-        String packageName=mContext.getPackageName();
-        String shaCode=RxAppUtils.getAppSignatureSHA1(mContext);
-        if(TextUtils.isEmpty(key)||TextUtils.isEmpty(packageName)||TextUtils.isEmpty(shaCode)){
-            KLog.e(TAG, "apikey or packageName or shaCode cannot be null");
-            iInitSDKListener.initFailed( HttpStatus.STATUS_INIT_FAILED,"apikey or packageName or shaCode cannot be null");
-            mVerifySucess=false;
-            return;
-        }
-
-        if(!key.equals(RxEncryptTool.encryptMD5ToString(shaCode+packageName,key))){
-            KLog.e(TAG, "apikey is Error");
-            iInitSDKListener.initFailed(HttpStatus.STATUS_INIT_FAILED,"apikey is Error");
-            mVerifySucess=false;
-            return;
-        }
+//        //TODO 网络请求，获取认证结果
+//        String packageName=mContext.getPackageName();
+//        String shaCode=RxAppUtils.getAppSignatureSHA1(mContext);
+//        if(TextUtils.isEmpty(key)||TextUtils.isEmpty(packageName)||TextUtils.isEmpty(shaCode)){
+//            KLog.e(TAG, "apikey or packageName or shaCode cannot be null");
+//            iInitSDKListener.initFailed( HttpStatus.STATUS_INIT_FAILED,"apikey or packageName or shaCode cannot be null");
+//            mVerifySucess=false;
+//            return;
+//        }
+//
+//        if(!key.equals(RxEncryptTool.encryptMD5ToString(shaCode+packageName,key))){
+//            KLog.e(TAG, "apikey is Error");
+//            iInitSDKListener.initFailed(HttpStatus.STATUS_INIT_FAILED,"apikey is Error");
+//            mVerifySucess=false;
+//            return;
+//        }
         if(isOffLine){
             iInitSDKListener.initSuccess();
             mVerifySucess=true;
-        }else{
-            AuthorData authorData=new AuthorData();
-            authorData.setPackageName(packageName);
-            authorData.setShaCode(shaCode);
-            authorData.setApiKey(key);
-            sdkRepository.verrifySDK(authorData, new IAzimuthNaviManager.IInitSDKListener() {
-                @Override
-                public void onAuthResult(int code, String message) {
-                    iInitSDKListener.onAuthResult(code,message);
-                }
-
-                @Override
-                public void initStart() {
-                    iInitSDKListener.initStart();
-                }
-
-                @Override
-                public void initSuccess() {
-                    iInitSDKListener.initSuccess();
-                    mVerifySucess=true;
-                }
-
-                @Override
-                public void initFailed(int code, String message) {
-                    iInitSDKListener.initFailed(code,message);
-                    mVerifySucess=false;
-                }
-            });
         }
+//        else{
+//            AuthorData authorData=new AuthorData();
+//            authorData.setPackageName(packageName);
+//            authorData.setShaCode(shaCode);
+//            authorData.setApiKey(key);
+//            sdkRepository.verrifySDK(authorData, new IAzimuthNaviManager.IInitSDKListener() {
+//                @Override
+//                public void onAuthResult(int code, String message) {
+//                    iInitSDKListener.onAuthResult(code,message);
+//                }
+//
+//                @Override
+//                public void initStart() {
+//                    iInitSDKListener.initStart();
+//                }
+//
+//                @Override
+//                public void initSuccess() {
+//                    iInitSDKListener.initSuccess();
+//                    mVerifySucess=true;
+//                }
+//
+//                @Override
+//                public void initFailed(int code, String message) {
+//                    iInitSDKListener.initFailed(code,message);
+//                    mVerifySucess=false;
+//                }
+//            });
+//        }
 
 
     }
@@ -220,13 +225,11 @@ public class AzimuthIndoorStrategy {
                 break;
             }
         }
-        Log.d(TAG, "mCurrentConfig is null == "+(mCurrentConfig==null));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             indoorPositionService.setInfoAndStartup(mCurrentConfig);
         } else {
             KLog.e(TAG, "currentVersion is too low, is " + Build.VERSION.SDK_INT);
         }
-        KLog.d(TAG, "mCurrentConfig is null == " + (mCurrentConfig == null));
     }
 
     private final ServiceConnection connection = new ServiceConnection() {
@@ -258,14 +261,12 @@ public class AzimuthIndoorStrategy {
                         if(!ipsMeasurement.mode.equals(measurement.getMode())){
                             iNaviIndoorStateChangeListener.onIndoorOrOutdoorChanged(measurement.getMode());
                         }
-
                     }
                 }
 
                 KLog.i(TAG, "result is "+text);
                 updateMapConfig(measurement.getMapID(), indoorPositionService);
                 new Handler(Looper.getMainLooper()).post(() -> {
-
                     if (mCallback != null) {
                         mCallback.onReceive(measurement);
                     }
@@ -307,7 +308,7 @@ public class AzimuthIndoorStrategy {
     }
 
     public static String getMapConfigPath(){
-        return RxFileUtils.getDataPath()+FOLDER_NAME_MAPDATA;
+        return Utils.getContext().getExternalFilesDir(null)+File.separator+FOLDER_NAME_MAPDATA;
     }
 
     public static String getAreaCode(String areaId) {

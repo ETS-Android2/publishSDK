@@ -51,7 +51,6 @@ task wrapper(type: Wrapper){
 
 
 dependencies {
-    implementation 'com.google.firebase:firebase-crashlytics-buildtools:2.5.2'
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
