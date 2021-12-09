@@ -2,21 +2,28 @@ package com.indoor.data;
 
 import androidx.annotation.NonNull;
 
+import com.indoor.AzimuthIndoorStrategy;
 import com.indoor.IAzimuthNaviManager;
 import com.indoor.data.entity.author.AuthorData;
+import com.indoor.data.entity.projectareo.ProjectAreaData;
 import com.indoor.data.http.BaseResponse;
+import com.indoor.data.http.DownLoadManager;
 import com.indoor.data.http.ExceptionHandle;
 import com.indoor.data.http.HttpDataSource;
 import com.indoor.data.http.HttpDataSourceImpl;
 import com.indoor.data.http.HttpStatus;
 import com.indoor.data.http.ResponseThrowable;
+import com.indoor.data.http.download.ProgressCallBack;
 import com.indoor.data.local.LocalDataSource;
 import com.indoor.data.local.LocalDataSourceImpl;
 import com.indoor.data.local.db.UserActionData;
 import com.indoor.utils.KLog;
+import com.indoor.utils.RxFileUtils;
 import com.indoor.utils.RxUtils;
 
 import java.util.List;
+
+import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
@@ -124,10 +131,8 @@ public class SDKRepository{
     }
 
     public String getToken(){
-        return "fortest";
-//        return mLocalDataSource.getToken();
+        return mLocalDataSource.getToken();
     }
-
 
     /**
      * SDK鉴权
@@ -137,6 +142,7 @@ public class SDKRepository{
      */
     public boolean verrifySDK(AuthorData authorData, IAzimuthNaviManager.IInitSDKListener iInitSDKListener){
         final boolean[] result = {false};
+        iInitSDKListener.initStart();
         addSubscribe(mHttpDataSource.verifyAuth(authorData).compose(RxUtils.schedulersTransformer()) //线程调度
                 .doOnSubscribe((Consumer<Disposable>) disposable -> {
                     KLog.e(TAG,"doOnSubscribe ... ");
@@ -151,6 +157,7 @@ public class SDKRepository{
                             KLog.e(TAG,"token is :"+token);
                             mLocalDataSource.saveToken(token);
                             submitDefineLogRecord();
+                            iInitSDKListener.initSuccess();
                             result[0] =true;
                         } else {
                             //TODOhandle token error
@@ -174,4 +181,54 @@ public class SDKRepository{
        return result[0];
     }
 
+    public void refreshAreaConfig(ProjectAreaData projectAreaData) {
+        addSubscribe(mHttpDataSource.getProjectAreaData(projectAreaData).compose(RxUtils.schedulersTransformer()) //线程调度
+                .doOnSubscribe((Consumer<Disposable>) disposable -> {
+                    KLog.e(TAG,"doOnSubscribe ... ");
+                })
+                .subscribe(new Consumer<BaseResponse<String>>(){
+                    @Override
+                    public void accept(BaseResponse<String> entity)throws Exception {
+                        KLog.e(TAG,"submitLogRecord result is "+entity.getResult());
+                        int code=entity.getResultCode();
+                        if(code== HttpStatus.STATUS_CODE_SUCESS){
+                            String token=entity.getResult();
+                            KLog.e(TAG,"token is :"+token);
+                            //TODO 下载配置文件
+                            String url=entity.getResult();
+                            String areaId=projectAreaData.getProjectAreaId();
+                            DownLoadManager.getInstance().load(url, new ProgressCallBack(AzimuthIndoorStrategy.getMapConfigPath(), AzimuthIndoorStrategy.getAreaCode(areaId)) {
+                                @Override
+                                public void onSuccess(Object o) {
+                                    KLog.d(TAG,"load config sucess...");
+                                }
+
+                                @Override
+                                public void progress(long progress, long total) {
+                                    KLog.d(TAG,"load config progress:"+progress+";total is "+total);
+                                }
+
+                                @Override
+                                public void onError(Throwable e) {
+                                    KLog.d(TAG,"load config error:"+e.getMessage());
+                                }
+                            });
+                        } else {
+                            //TODOhandle token error
+                            KLog.e(TAG,"handle Error:"+ExceptionHandle.getHttpExceptionMsg(code));
+                        }
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        ResponseThrowable e= ExceptionHandle.handleException(throwable);
+                        KLog.e(TAG+" accept error :",e.message);
+                    }
+                }, new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        KLog.e(TAG," http request complete...");
+                    }
+                }));
+    }
 }

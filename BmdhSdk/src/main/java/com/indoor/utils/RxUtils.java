@@ -16,7 +16,7 @@ import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /**
- * Created by goldze on 2017/6/19.
+ * Created by Aaron on 2017/6/19.
  * 有关Rx的工具类
  */
 public class RxUtils {

@@ -2,6 +2,7 @@ package com.indoor.data.http;
 
 import com.indoor.data.entity.author.AuthorData;
 import com.indoor.data.entity.author.AuthorResponse;
+import com.indoor.data.entity.projectareo.ProjectAreaData;
 import com.indoor.data.http.service.IndoorApiService;
 import com.indoor.data.local.db.UserActionData;
 import com.indoor.utils.KLog;
@@ -52,5 +53,10 @@ public class HttpDataSourceImpl implements HttpDataSource {
     @Override
     public Observable<BaseResponse<String>> verifyAuth(AuthorData authorData) {
         return mIndoorApiService.verifyAuth(authorData);
+    }
+
+    @Override
+    public Observable<BaseResponse<String>> getProjectAreaData(ProjectAreaData projectArea) {
+        return mIndoorApiService.getProjectAreaData(projectArea);
     }
 }

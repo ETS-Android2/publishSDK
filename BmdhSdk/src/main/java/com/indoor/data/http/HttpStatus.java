@@ -1,15 +1,23 @@
 package com.indoor.data.http;
 
+import androidx.annotation.Keep;
+
 /**
  * @author Aaron
  * @description:
  * @date : 2020/1/1 22:13
  */
+@Keep
 public class HttpStatus {
     /**
      * 返回成功
      */
     public static int STATUS_CODE_SUCESS = 200;
+
+    /**
+     * 初始化失败
+     */
+    public static int STATUS_INIT_FAILED = 1001;
     /**
      * token过期，需要执行登录 old
      */

@@ -1,7 +1,7 @@
 package com.indoor.utils;
 
-import static com.indoor.utils.RxDataUtils.bytes2HexString;
-import static com.indoor.utils.RxDataUtils.hexString2Bytes;
+import static com.indoor.utils.RxDataTool.bytes2HexString;
+import static com.indoor.utils.RxDataTool.hexString2Bytes;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,14 +15,40 @@ import java.security.SecureRandom;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
-
 /**
- * Created by Aaron on 2016/1/24.
- *加密解密相关的工具类
+ *
+ * @author Aaron
+ * @date 2016/1/24
+ * 加密解密相关的工具类
  */
-public class RxEncryptUtils {
+public class RxEncryptTool {
 
     /*********************** 哈希加密相关 ***********************/
+    private static final String DES_Algorithm = "DES";
+    private static final String TripleDES_Algorithm = "DESede";
+    private static final String AES_Algorithm = "AES";
+    /**
+     * DES转变
+     * <p>法算法名称/加密模式/填充方式</p>
+     * <p>加密模式有：电子密码本模式ECB、加密块链模式CBC、加密反馈模式CFB、输出反馈模式OFB</p>
+     * <p>填充方式有：NoPadding、ZerosPadding、PKCS5Padding</p>
+     */
+    public static String DES_Transformation = "DES/ECB/NoPadding";
+    /**
+     * 3DES转变
+     * <p>法算法名称/加密模式/填充方式</p>
+     * <p>加密模式有：电子密码本模式ECB、加密块链模式CBC、加密反馈模式CFB、输出反馈模式OFB</p>
+     * <p>填充方式有：NoPadding、ZerosPadding、PKCS5Padding</p>
+     */
+    public static String TripleDES_Transformation = "DESede/ECB/NoPadding";
+    /**
+     * AES转变
+     * <p>法算法名称/加密模式/填充方式</p>
+     * <p>加密模式有：电子密码本模式ECB、加密块链模式CBC、加密反馈模式CFB、输出反馈模式OFB</p>
+     * <p>填充方式有：NoPadding、ZerosPadding、PKCS5Padding</p>
+     */
+    public static String AES_Transformation = "AES/ECB/NoPadding";
+
     /**
      * MD2加密
      *
@@ -156,7 +182,7 @@ public class RxEncryptUtils {
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
         } finally {
-            RxFileUtils.closeIO(fis);
+            RxFileTool.closeIO(fis);
         }
         return null;
     }
@@ -261,6 +287,8 @@ public class RxEncryptUtils {
         return encryptSHA384ToString(data.getBytes());
     }
 
+    /************************ DES加密相关 ***********************/
+
     /**
      * SHA384加密
      *
@@ -329,16 +357,6 @@ public class RxEncryptUtils {
         return new byte[0];
     }
 
-    /************************ DES加密相关 ***********************/
-    /**
-     * DES转变
-     * <p>法算法名称/加密模式/填充方式</p>
-     * <p>加密模式有：电子密码本模式ECB、加密块链模式CBC、加密反馈模式CFB、输出反馈模式OFB</p>
-     * <p>填充方式有：NoPadding、ZerosPadding、PKCS5Padding</p>
-     */
-    public static String DES_Transformation = "DES/ECB/NoPadding";
-    private static final String DES_Algorithm = "DES";
-
     /**
      * @param data           数据
      * @param key            秘钥
@@ -368,7 +386,7 @@ public class RxEncryptUtils {
      * @return Base64密文
      */
     public static byte[] encryptDES2Base64(byte[] data, byte[] key) {
-        return RxEncodeUtils.base64Encode(encryptDES(data, key));
+        return RxEncodeTool.base64Encode(encryptDES(data, key));
     }
 
     /**
@@ -381,6 +399,8 @@ public class RxEncryptUtils {
     public static String encryptDES2HexString(byte[] data, byte[] key) {
         return bytes2HexString(encryptDES(data, key));
     }
+
+    /************************ 3DES加密相关 ***********************/
 
     /**
      * DES加密
@@ -401,7 +421,7 @@ public class RxEncryptUtils {
      * @return 明文
      */
     public static byte[] decryptBase64DES(byte[] data, byte[] key) {
-        return decryptDES(RxEncodeUtils.base64Decode(data), key);
+        return decryptDES(RxEncodeTool.base64Decode(data), key);
     }
 
     /**
@@ -426,17 +446,6 @@ public class RxEncryptUtils {
         return DESTemplet(data, key, DES_Algorithm, DES_Transformation, false);
     }
 
-    /************************ 3DES加密相关 ***********************/
-    /**
-     * 3DES转变
-     * <p>法算法名称/加密模式/填充方式</p>
-     * <p>加密模式有：电子密码本模式ECB、加密块链模式CBC、加密反馈模式CFB、输出反馈模式OFB</p>
-     * <p>填充方式有：NoPadding、ZerosPadding、PKCS5Padding</p>
-     */
-    public static String TripleDES_Transformation = "DESede/ECB/NoPadding";
-    private static final String TripleDES_Algorithm = "DESede";
-
-
     /**
      * 3DES加密后转为Base64编码
      *
@@ -445,7 +454,7 @@ public class RxEncryptUtils {
      * @return Base64密文
      */
     public static byte[] encrypt3DES2Base64(byte[] data, byte[] key) {
-        return RxEncodeUtils.base64Encode(encrypt3DES(data, key));
+        return RxEncodeTool.base64Encode(encrypt3DES(data, key));
     }
 
     /**
@@ -478,8 +487,10 @@ public class RxEncryptUtils {
      * @return 明文
      */
     public static byte[] decryptBase64_3DES(byte[] data, byte[] key) {
-        return decrypt3DES(RxEncodeUtils.base64Decode(data), key);
+        return decrypt3DES(RxEncodeTool.base64Decode(data), key);
     }
+
+    /************************ AES加密相关 ***********************/
 
     /**
      * 3DES解密16进制密文
@@ -503,17 +514,6 @@ public class RxEncryptUtils {
         return DESTemplet(data, key, TripleDES_Algorithm, TripleDES_Transformation, false);
     }
 
-    /************************ AES加密相关 ***********************/
-    /**
-     * AES转变
-     * <p>法算法名称/加密模式/填充方式</p>
-     * <p>加密模式有：电子密码本模式ECB、加密块链模式CBC、加密反馈模式CFB、输出反馈模式OFB</p>
-     * <p>填充方式有：NoPadding、ZerosPadding、PKCS5Padding</p>
-     */
-    public static String AES_Transformation = "AES/ECB/NoPadding";
-    private static final String AES_Algorithm = "AES";
-
-
     /**
      * AES加密后转为Base64编码
      *
@@ -522,7 +522,7 @@ public class RxEncryptUtils {
      * @return Base64密文
      */
     public static byte[] encryptAES2Base64(byte[] data, byte[] key) {
-        return RxEncodeUtils.base64Encode(encryptAES(data, key));
+        return RxEncodeTool.base64Encode(encryptAES(data, key));
     }
 
     /**
@@ -555,7 +555,7 @@ public class RxEncryptUtils {
      * @return 明文
      */
     public static byte[] decryptBase64AES(byte[] data, byte[] key) {
-        return decryptAES(RxEncodeUtils.base64Decode(data), key);
+        return decryptAES(RxEncodeTool.base64Decode(data), key);
     }
 
     /**

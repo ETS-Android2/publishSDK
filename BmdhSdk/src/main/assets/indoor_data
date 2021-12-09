@@ -1,6 +1,6 @@
 {
 	"dataConfig": [{
-			"mapid": 4,
+			"mapid": "000004",
 			"SatelliteInfo": [{
 					"x": -4.4896,
 					"y": -0.9689,
@@ -134,7 +134,7 @@
 			"ispsemodeL1": true
 		},
 		{
-			"mapid": 3,
+			"mapid": "000003",
 			"SatelliteInfo": [{
 					"x": -4.4896,
 					"y": -0.9689,
@@ -268,7 +268,7 @@
 			"ispsemodeL1": true
 		},
 		{
-			"mapid": 2,
+			"mapid": "000002",
 			"SatelliteInfo": [{
 					"x": -4.4896,
 					"y": -0.9689,

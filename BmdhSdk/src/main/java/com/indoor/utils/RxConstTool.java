@@ -1,10 +1,12 @@
 package com.indoor.utils;
 
 /**
- * Created by Aaron on 2016/1/24.
+ *
+ * @author Aaron
+ * @date 2016/1/24
  * 常量工具类
  */
-public class RxConstUtils {
+public class RxConstTool {
 
     /******************** 存储相关常量 ********************/
     /**
@@ -23,19 +25,12 @@ public class RxConstUtils {
      * GB与Byte的倍数
      */
     public static final int GB = 1073741824;
-
-    public enum MemoryUnit {
-        BYTE,
-        KB,
-        MB,
-        GB
-    }
-
-    /******************** 时间相关常量 ********************/
     /**
      * 毫秒与毫秒的倍数
      */
     public static final int MSEC = 1;
+
+    /******************** 时间相关常量 ********************/
     /**
      * 秒与毫秒的倍数
      */
@@ -52,14 +47,19 @@ public class RxConstUtils {
      * 天与毫秒的倍数
      */
     public static final int DAY = 86400000;
-
-    public enum TimeUnit {
-        MSEC,
-        SEC,
-        MIN,
-        HOUR,
-        DAY
-    }
+    /**
+     * 正则：手机号（简单）
+     */
+    public static final String REGEX_MOBILE_SIMPLE = "^[1]\\d{10}$";
+    /**
+     * 正则：手机号（精确）
+     * 移动：134(0-8)、135、136、137、138、139、147、150、151、152、157、158、159、178、182、183、184、187、188
+     * 联通：130、131、132、145、155、156、175、176、185、186
+     * 电信：133、153、173、177、180、181、189
+     * 全球星：1349
+     * 虚拟运营商：170
+     */
+    public static final String REGEX_MOBILE_EXACT = "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|(147))\\d{8}$";
 
     /******************** 正则相关常量 ********************/
 
@@ -80,19 +80,6 @@ public class RxConstUtils {
      * 提取信息中的双字节字符串 (汉字)：[^\x00-\xff]*
      */
     /**
-     * 正则：手机号（简单）
-     */
-    public static final String REGEX_MOBILE_SIMPLE = "^[1]\\d{10}$";
-    /**
-     * 正则：手机号（精确）
-     * 移动：134(0-8)、135、136、137、138、139、147、150、151、152、157、158、159、178、182、183、184、187、188
-     * 联通：130、131、132、145、155、156、175、176、185、186
-     * 电信：133、153、173、177、180、181、189
-     * 全球星：1349
-     * 虚拟运营商：170
-     */
-    public static final String REGEX_MOBILE_EXACT = "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|(147))\\d{8}$";
-    /**
      * 正则：电话号码
      */
     public static final String REGEX_TEL = "^0\\d{2,3}[- ]?\\d{7,8}";
@@ -104,7 +91,6 @@ public class RxConstUtils {
      * 正则：身份证号码18位
      */
     public static final String REGEX_IDCARD18 = "^[1-9]\\d{5}[1-9]\\d{3}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}([0-9Xx])$";
-
     /**
      * 正则：身份证号码15或18位 包含以x结尾
      */
@@ -133,4 +119,19 @@ public class RxConstUtils {
      * 正则：IP地址
      */
     public static final String REGEX_IP = "((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)";
+
+    public enum MemoryUnit {
+        BYTE,
+        KB,
+        MB,
+        GB
+    }
+
+    public enum TimeUnit {
+        MSEC,
+        SEC,
+        MIN,
+        HOUR,
+        DAY
+    }
 }

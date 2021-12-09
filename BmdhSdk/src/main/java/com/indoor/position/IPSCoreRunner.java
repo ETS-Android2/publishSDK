@@ -42,7 +42,7 @@ class IPSCoreRunner {
     // TODO: refactor this
     private double[] bluetoothReferLocation={1,2,3};
     private IPSMeasurement.Mode mode= OUTDOOR;
-    private long mapID;
+    private String mapID;
     private boolean hasinitonedeKF=false;
     private boolean hasinittwodeKF=false;
 
@@ -143,7 +143,7 @@ class IPSCoreRunner {
         if (!maxId.equals("") && maxCnt >= 2) {
          if ((maxId.equals("017") || maxId.equals("018")) && mode == OUTDOOR) {
                 mode = INDOOR;
-                mapID=1;
+                mapID="000001";
                 if(!hasinitonedeKF) {
                     indoorPositionProcessor.initialAPBCaKFOneDimen();
                     hasinitonedeKF=true;
@@ -159,7 +159,7 @@ class IPSCoreRunner {
                     //areaRange= new double[]{roomCenter[0] - threshold_x_y[0], roomCenter[1] - threshold_x_y[1], roomCenter[0] + threshold_x_y[0], roomCenter[1] + threshold_x_y[1]};
                     Log.i(TAG, "init initialAbsolutePositioningBaseCarrierKFTwoDimen");
                 }
-                mapID=2;
+                mapID="000002";
                 mode=INDOOR;
             }
             if(bluetoothLabel.containsKey(maxId)) {
@@ -174,7 +174,7 @@ class IPSCoreRunner {
     }
 
 
-    IPSMeasurement coordExchange(IndoorPositionMeasurement result,double[] mocratorfixcoord,double degZfixcoord,String text, long currentMapID, IPSMeasurement.Mode currentMod)
+    IPSMeasurement coordExchange(IndoorPositionMeasurement result,double[] mocratorfixcoord,double degZfixcoord,String text, String currentMapID, IPSMeasurement.Mode currentMod)
     {
         if(result!=null) {
             IPSMeasurement mocrator = new IPSMeasurement(text,result.getXAxisCoordinate()*Math.cos(degZfixcoord)+result.getYAxisCoordinate()*Math.sin(degZfixcoord)+ mocratorfixcoord[0],
@@ -199,7 +199,7 @@ class IPSCoreRunner {
             //areaRange= new double[]{roomCenter[0] - threshold_x_y[0], roomCenter[1] - threshold_x_y[1], roomCenter[0] + threshold_x_y[0], roomCenter[1] + threshold_x_y[1]};
             Log.i(TAG, "init initialAbsolutePositioningBaseCarrierKFTwoDimen");
         }
-        mapID=2;
+        mapID="000002";
         mode=INDOOR;
 
         timer.schedule(new TimerTask() {
