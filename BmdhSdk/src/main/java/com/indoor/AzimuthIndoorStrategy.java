@@ -4,8 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -24,9 +22,7 @@ import com.indoor.data.http.HttpStatus;
 import com.indoor.position.IPSMeasurement;
 import com.indoor.position.IndoorPositionService;
 import com.indoor.utils.KLog;
-import com.indoor.utils.RxAppUtils;
 import com.indoor.utils.RxEncryptTool;
-import com.indoor.utils.RxFileTool;
 import com.indoor.utils.RxFileUtils;
 import com.indoor.utils.Utils;
 
@@ -36,11 +32,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class AzimuthIndoorStrategy {
     private static final String TAG = "BmdhIndoorStrategy";
-    private static final String META_DATA = "com.bmdh.indoorsdk.API_KEY";
+
     private static final String FOLDER_NAME_MAPDATA="mapconfig";
-    private static final boolean isOffLine=true;
+    private static final String SALT="shanghai-azimuth-data-Technology-Company-Limited-@-api-key-salt-001-*";
+    private static final boolean isOffLine=false;
     private static String MAPCONFIG_FOLDER_PATH;
-    private static String CONFIG_ASSET_NAME = "indoor_data";
+    private static String CONFIG_ASSET_NAME = "440312";
     private Context mContext;
     private boolean mBound = false;
     private boolean mVerifySucess = false;
@@ -83,66 +80,61 @@ public class AzimuthIndoorStrategy {
     }
 
     public void verifySDK(IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
-//        ApplicationInfo appInfo = null;
-//        String key = "";
-//        try {
-//            appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
-//            key =appInfo.metaData.getString(META_DATA);
-//        } catch (Exception e) {
-//            KLog.e(TAG, "get meta-data error:"+e.getMessage());
-//            return;
-//        }
-//        KLog.d(TAG, " APIkey == " + key);
-
-//        //TODO 网络请求，获取认证结果
-//        String packageName=mContext.getPackageName();
-//        String shaCode=RxAppUtils.getAppSignatureSHA1(mContext);
-//        if(TextUtils.isEmpty(key)||TextUtils.isEmpty(packageName)||TextUtils.isEmpty(shaCode)){
-//            KLog.e(TAG, "apikey or packageName or shaCode cannot be null");
-//            iInitSDKListener.initFailed( HttpStatus.STATUS_INIT_FAILED,"apikey or packageName or shaCode cannot be null");
-//            mVerifySucess=false;
-//            return;
-//        }
-//
-//        if(!key.equals(RxEncryptTool.encryptMD5ToString(shaCode+packageName,key))){
-//            KLog.e(TAG, "apikey is Error");
-//            iInitSDKListener.initFailed(HttpStatus.STATUS_INIT_FAILED,"apikey is Error");
-//            mVerifySucess=false;
-//            return;
-//        }
+        String key = sdkRepository.getApiKey();
+        KLog.d(TAG, " APIkey == " + key);
+        String packageName=sdkRepository.getPackageName();
+        String shaCode= sdkRepository.getShaCode();
+        if(TextUtils.isEmpty(key)||TextUtils.isEmpty(packageName)||TextUtils.isEmpty(shaCode)){
+            KLog.e(TAG, "apikey or packageName or shaCode cannot be null");
+            iInitSDKListener.initFailed( HttpStatus.STATUS_INIT_FAILED,"apikey or packageName or shaCode cannot be null");
+            mVerifySucess=false;
+            return;
+        }
+        String apikey=RxEncryptTool.encryptMD5ToString(packageName+shaCode,SALT);
+        KLog.d(TAG, "apikey is "+apikey);
+        if(!key.equals(apikey)){
+            KLog.e(TAG, "apikey is Error");
+            iInitSDKListener.initFailed(HttpStatus.STATUS_INIT_FAILED,"apikey is Error");
+            mVerifySucess=false;
+            return;
+        }
+        String mw="方位角数据科技有限公司Az#!";
+        String miw= RxEncryptTool.encrypt3DES2Base64(mw,SALT);
+        KLog.d(TAG, "miw is "+miw);
+        String desStr=RxEncryptTool.decryptBase64_3DES(miw, SALT);
+        KLog.d(TAG, "desStr is "+desStr);
         if(isOffLine){
             iInitSDKListener.initSuccess();
             mVerifySucess=true;
+        } else{
+            AuthorData authorData=new AuthorData();
+            authorData.setPackageName(packageName);
+            authorData.setShaCode(shaCode);
+            authorData.setApiKey(key);
+            sdkRepository.verrifySDK(authorData, new IAzimuthNaviManager.IInitSDKListener() {
+                @Override
+                public void onAuthResult(int code, String message) {
+                    iInitSDKListener.onAuthResult(code,message);
+                }
+
+                @Override
+                public void initStart() {
+                    iInitSDKListener.initStart();
+                }
+
+                @Override
+                public void initSuccess() {
+                    iInitSDKListener.initSuccess();
+                    mVerifySucess=true;
+                }
+
+                @Override
+                public void initFailed(int code, String message) {
+                    iInitSDKListener.initFailed(code,message);
+                    mVerifySucess=false;
+                }
+            });
         }
-//        else{
-//            AuthorData authorData=new AuthorData();
-//            authorData.setPackageName(packageName);
-//            authorData.setShaCode(shaCode);
-//            authorData.setApiKey(key);
-//            sdkRepository.verrifySDK(authorData, new IAzimuthNaviManager.IInitSDKListener() {
-//                @Override
-//                public void onAuthResult(int code, String message) {
-//                    iInitSDKListener.onAuthResult(code,message);
-//                }
-//
-//                @Override
-//                public void initStart() {
-//                    iInitSDKListener.initStart();
-//                }
-//
-//                @Override
-//                public void initSuccess() {
-//                    iInitSDKListener.initSuccess();
-//                    mVerifySucess=true;
-//                }
-//
-//                @Override
-//                public void initFailed(int code, String message) {
-//                    iInitSDKListener.initFailed(code,message);
-//                    mVerifySucess=false;
-//                }
-//            });
-//        }
 
 
     }
@@ -195,7 +187,8 @@ public class AzimuthIndoorStrategy {
             return;
         }
         currentSetMapID = mapID;
-        mapConfig = getMapConfig(mContext, "indoor_data");
+        sdkRepository.saveAreaId(mapID);
+        mapConfig = getMapConfig(mContext, "440312");
         if(mapConfig==null){
             KLog.e(TAG,"MapConfig is null,please ensure that the SDK is operating properly according to the steps");
             return;

@@ -16,6 +16,7 @@ import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 /**
@@ -24,9 +25,8 @@ import retrofit2.http.POST;
 
 public interface IndoorApiService {
     @POST("sdk/app/log/addLogRecord")
-    Observable<BaseResponse<String>> submitLogRecord(@Body List<UserActionData> userActionDatas);
+    Observable<BaseResponse<String>> submitLogRecord(@Header("Access-Token") String token, @Body List<UserActionData> userActionDatas);
 
-    @FormUrlEncoded
     @POST("sdk/auth/getAccessToken")
     Observable<BaseResponse<String>> verifyAuth(@Body AuthorData authorData);
 

@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -468,6 +469,23 @@ public class RxEncryptUtils {
      */
     public static byte[] encrypt3DES(byte[] data, byte[] key) {
         return DESTemplet(data, key, TripleDES_Algorithm, TripleDES_Transformation, true);
+    }
+
+    /**
+     * 根据字符串生成密钥24位的字节数组
+     *
+     * @param keyStr
+     * @return
+     */
+    public static byte[] build3DesKey24(String keyStr) {
+        byte[] key = new byte[24];
+        byte[] temp = keyStr.getBytes(StandardCharsets.UTF_8);
+        if (key.length > temp.length) {
+            System.arraycopy(temp, 0, key, 0, temp.length);
+        } else {
+            System.arraycopy(temp, 0, key, 0, key.length);
+        }
+        return key;
     }
 
     /**

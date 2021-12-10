@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -40,7 +41,8 @@ public class RxEncryptTool {
      * <p>加密模式有：电子密码本模式ECB、加密块链模式CBC、加密反馈模式CFB、输出反馈模式OFB</p>
      * <p>填充方式有：NoPadding、ZerosPadding、PKCS5Padding</p>
      */
-    public static String TripleDES_Transformation = "DESede/ECB/NoPadding";
+    public static String TripleDES_Transformation = "DESede/ECB/PKCS5Padding";
+
     /**
      * AES转变
      * <p>法算法名称/加密模式/填充方式</p>
@@ -458,6 +460,17 @@ public class RxEncryptTool {
     }
 
     /**
+     * 3DES加密后转为Base64编码
+     *
+     * @param data 明文
+     * @param key  24字节秘钥
+     * @return Base64密文
+     */
+    public static String encrypt3DES2Base64(String data, String key) {
+        return RxEncodeTool.base64Encode2String(encrypt3DES(data.getBytes(StandardCharsets.UTF_8),RxEncryptUtils.build3DesKey24(key)));
+    }
+
+    /**
      * 3DES加密后转为16进制
      *
      * @param data 明文
@@ -466,6 +479,17 @@ public class RxEncryptTool {
      */
     public static String encrypt3DES2HexString(byte[] data, byte[] key) {
         return bytes2HexString(encrypt3DES(data, key));
+    }
+
+    /**
+     * 3DES加密后转为16进制
+     *
+     * @param data 明文
+     * @param key  24字节秘钥
+     * @return 16进制密文
+     */
+    public static String encrypt3DES2HexString(String data, String key) {
+        return bytes2HexString(encrypt3DES(data.getBytes(StandardCharsets.UTF_8),RxEncryptUtils.build3DesKey24(key)));
     }
 
     /**
@@ -490,7 +514,29 @@ public class RxEncryptTool {
         return decrypt3DES(RxEncodeTool.base64Decode(data), key);
     }
 
+    /**
+     * 3DES解密Base64编码密文
+     *
+     * @param data Base64编码密文
+     * @param key  24字节秘钥
+     * @return 明文
+     */
+    public static String decryptBase64_3DES(String data, String key) {
+        return new String(decrypt3DES(RxEncodeTool.base64Decode(data), RxEncryptUtils.build3DesKey24(key)),StandardCharsets.UTF_8);
+    }
+
     /************************ AES加密相关 ***********************/
+
+    /**
+     * 3DES解密16进制密文
+     *
+     * @param data 16进制密文
+     * @param key  24字节秘钥
+     * @return 明文
+     */
+    public static String decryptHexString3DES(String data, String key) {
+        return new String(decrypt3DES(hexString2Bytes(data), RxEncryptUtils.build3DesKey24(key)),StandardCharsets.UTF_8);
+    }
 
     /**
      * 3DES解密16进制密文

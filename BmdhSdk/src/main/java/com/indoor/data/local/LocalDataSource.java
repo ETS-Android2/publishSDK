@@ -26,6 +26,31 @@ public interface LocalDataSource {
     String getToken();
 
     /**
+     * 保存AreaId
+     */
+    void saveAreaId(String areaId);
+
+    /**
+     * 获取AreaId
+     */
+    String getAreaId();
+
+    /**
+     * 获取ApiKey
+     */
+    String getApiKey();
+
+    /**
+     * 获取ShaCode
+     */
+    String getShaCode();
+
+    /**
+     * 获取用户当前的包名
+     */
+    String getPackageName();
+
+    /**
      * 获取设备唯一ID
      * @return
      */
@@ -34,7 +59,7 @@ public interface LocalDataSource {
     /**
      * save 用户数据
      */
-    void saveUserActionDataToDB(UserActionData userActionData);
+    void saveUserActionDataToDB(UserActionData... userActionData);
 
     /**
      * delete 用户数据

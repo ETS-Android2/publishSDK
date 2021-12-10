@@ -13,7 +13,9 @@ import androidx.room.PrimaryKey;
  "longitude": 0,
  "positionState": 0,
  "projectAreaId": "",
- "uuid": ""
+ "uuid": ""，
+ ”machineOs“:"",
+ "machineManu":""
  */
 @Keep
 @Entity
@@ -24,8 +26,6 @@ public class UserActionData {
     public String apiKey;
     @ColumnInfo(name = "uuid")
     public String uuid;
-    @ColumnInfo(name = "mapId")
-    public String mapId;
     @ColumnInfo(name = "floorNum")
     public String floorNum;
     @ColumnInfo(name = "positionState")
@@ -38,6 +38,13 @@ public class UserActionData {
     public String ipsInfo;
     @ColumnInfo(name = "projectAreaId")
     public String projectAreaId;
+    //机器系统版本
+    @ColumnInfo(name = "machineOs")
+    public String machineOs;
+    //机器制造厂商
+    @ColumnInfo(name = "machineManu")
+    public String machineManu;
+
 
 
 }

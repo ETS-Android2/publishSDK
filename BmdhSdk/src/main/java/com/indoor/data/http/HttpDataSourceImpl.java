@@ -16,6 +16,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import retrofit2.http.Body;
+import retrofit2.http.Header;
 
 /**
  * Created by Aaron on  2019/3/26.
@@ -46,8 +47,8 @@ public class HttpDataSourceImpl implements HttpDataSource {
 
 
     @Override
-    public Observable<BaseResponse<String>> submitLogRecord(List<UserActionData> userActionDatas) {
-       return mIndoorApiService.submitLogRecord(userActionDatas);
+    public Observable<BaseResponse<String>> submitLogRecord(@Header("Access-Token") String token, @Body List<UserActionData> userActionDatas) {
+       return mIndoorApiService.submitLogRecord(token,userActionDatas);
     }
 
     @Override
