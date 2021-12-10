@@ -10,6 +10,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.indoor.position.swiggenerated.EnviromentData;
 import com.indoor.position.swiggenerated.IndoorPositionMeasurement;
 import com.indoor.position.swiggenerated.IndoorPositionProcessor;
 import com.indoor.position.swiggenerated.SatelliteIndoorMeasurement;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * {@link IPSCoreRunner} coordinates the GNSS and sensor measurements as well as the indoor position
@@ -38,6 +40,7 @@ class IPSCoreRunner {
     private final String TAG ="changxing";
     private final Timer timer = new Timer();
     private String debugstring;
+    private String logstring="log";
     private final AtomicReference<IPSMeasurement.Callback> callback;
     // TODO: refactor this
     private double[] bluetoothReferLocation={1,2,3};
@@ -48,24 +51,17 @@ class IPSCoreRunner {
 
 
     /** 配置参数  **/
-	double[] fixedCoor= new double[]{0,0,1.0};
-	boolean ispsemodeL1=true;
-    Integer[] listL1={1, 2, 3, 4,5,6, 7, 8,9,10,11,12,13,14,15,16};
-    Integer[] listL5={1, 2, 3, 4,5,6, 7, 8,9,10,11,12,13,14,15,16};
-/*    Integer[] listL1={1, 3, 24, 25,26,27, 30, 32};
-    Integer[] listL5={1, 3, 24, 25,26,27, 30, 32};*/
-/*    double[] gmocratorfixcoord=new double[]{0,0,0};
-    double gdegZfixcoord=0;*/
-    double[] roomCenter=new double[]{10,8};
-    double[] threshold_x_y=new double[]{15,10};
+	boolean ispsemodeL1;
+    List<Integer> listL1;
+    List<Integer> listL5;
+    double[] gmocratorfixcoord;
+    double gdegZfixcoord;
     Map<String, List<Double>> bluetoothLabel;
-    double jingweideg=90/180*Math.PI;
+    double jingweideg;
     /** 配置参数  **/
 
- /*   double[] gmocratorfixcoord=new double[]{12699424.335,2577637.635,0};
-    double gdegZfixcoord=0;*/
-    double[] gmocratorfixcoord=new double[]{13536740.6489254,3649357.91954317,0};
-    double gdegZfixcoord=4.3907;
+/*    double[] gmocratorfixcoord=new double[]{13536740.6489254,3649357.91954317,0};
+    double gdegZfixcoord=4.3907;*/
 
 
 
@@ -88,16 +84,24 @@ class IPSCoreRunner {
 
     public static String twoDigitsString(double value) {
 
-        return String.format("%.2f", value).toString();
+        return String.format("%.2f", value);
     }
 
     void updateInputData(SatelliteInfoList s,Inputparameter inputparameter)
     {
-        roomCenter=inputparameter.getRoomCenter();
-        threshold_x_y=inputparameter.getThreshold_x_y();
-        fixedCoor=inputparameter.getFixedCoor();
-        double[] initpoint=new double[] {roomCenter[0],roomCenter[1],1.0} ;
+        double[] initpoint=inputparameter.getRef_Coord() ;
+        listL1 = Arrays.asList(inputparameter.getListL1().split(","))
+                .stream().map(t -> Integer.parseInt(t.trim()))
+                .collect(Collectors.toList());
+        listL5 = Arrays.asList(inputparameter.getListL5().split(","))
+                .stream().map(t -> Integer.parseInt(t.trim()))
+                .collect(Collectors.toList());
+        ispsemodeL1 =inputparameter.getIs_L1_pse();
+        gmocratorfixcoord = inputparameter.getMocrator_fix_coord();
+        gdegZfixcoord = inputparameter.getMocrator_deg();
+        jingweideg = inputparameter.getJingwei_deg();
         indoorPositionProcessor.updateSatelliteInfo(s,initpoint);
+        indoorPositionProcessor.setInputparameter(inputparameter);
     }
     /**
      * Runner starts and initializes.
@@ -223,9 +227,7 @@ class IPSCoreRunner {
 
                 double[] stepjingwei=stepProcessor.jingweitoxy(jingweideg);
                 Log.i(TAG, "run: "+stepjingwei[0]+","+stepjingwei[1]);
-                Inputparameter inputparameter =new Inputparameter(roomCenter,threshold_x_y,
-                        bluetoothCheckResult,bluetoothReferLocation,
-                        fixedCoor,stepjingwei);
+                EnviromentData enviromentData = new EnviromentData( bluetoothCheckResult,bluetoothReferLocation,stepjingwei);
 
                 if (mode == INDOOR) {
                     GNSSProcessor.GNSSFilter fliter;
@@ -234,11 +236,11 @@ class IPSCoreRunner {
                             if(ispsemodeL1)
                             {
                                 fliter = new GNSSProcessor.GNSSFilter(GNSSProcessor.GNSSFilter.flitermod.freL1);
-                                fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL1, Arrays.asList(listL1));}
+                                fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL1, listL1);}
                             else
                             {
                                 fliter = new GNSSProcessor.GNSSFilter(GNSSProcessor.GNSSFilter.flitermod.freL5);
-                                fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL5, Arrays.asList(listL5));
+                                fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL5, listL5);
                             }
                             SatelliteIndoorMeasurementList finalInputMeasurementsL1 = new SatelliteIndoorMeasurementList();
                             SatelliteIndoorMeasurementList finalInputMeasurementsL5 = new SatelliteIndoorMeasurementList();
@@ -261,7 +263,7 @@ class IPSCoreRunner {
                                         });
 
                                 fliter = new GNSSProcessor.GNSSFilter(GNSSProcessor.GNSSFilter.flitermod.freL1);
-                                fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL1, Arrays.asList(listL1));
+                                fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL1, listL1);
                                 finalGnssData = gnssData.
                                         getSatelliteGNSSMeasurements().values().stream().filter(fliter).collect(ImmutableList.toImmutableList());
                                 finalGnssData.asList().forEach(
@@ -280,11 +282,10 @@ class IPSCoreRunner {
                                             finalInputMeasurementsL1.add(m);
                                         });
                             }
-                            posresult = indoorPositionProcessor.run(finalInputMeasurementsL1,finalInputMeasurementsL5,inputparameter);
+                            posresult = indoorPositionProcessor.run(finalInputMeasurementsL1,finalInputMeasurementsL5,enviromentData);
                             debugstring = "\n当前L5伪卫星数," + finalInputMeasurementsL5.size() +
-                                    "\n当前L1伪卫星数," + finalInputMeasurementsL1.size() +
-                                    "\nL5定位状态," + posresult.getL5locatestate() +" 成功率"+twoDigitsString(posresult.getL5_z()*100)+"%"+
-                                    "\nL5定位结果," + twoDigitsString(posresult.getL5_x()) + "," + twoDigitsString(posresult.getL5_y());
+                                    "\n当前L1伪卫星数," + finalInputMeasurementsL1.size() +"\n"+
+                                    posresult.getDescription();
                             c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord, debugstring, mapID, mode));
                             finalInputMeasurementsL5.clear();
                             finalInputMeasurementsL1.clear();
@@ -298,7 +299,7 @@ class IPSCoreRunner {
                             indoorPositionProcessor.initialAPBCKFTwoDimen();
                         }
                     } else {
-                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"无测量值", mapID, mode));
+                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"无测量值\n", mapID, mode));
                     }
                 } else {
                     //非室内模式

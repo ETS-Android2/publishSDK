@@ -83,9 +83,19 @@ public class IndoorPositionService extends Service {
         double[] roomCenter=new double[]{mCurrentConfig.getRoomCenter().getX(),mCurrentConfig.getRoomCenter().getY()};
         double[] threshold_x_y=new double[]{mCurrentConfig.getThresholdXY().getX(),mCurrentConfig.getThresholdXY().getY()};
         double[] gmocratorfixcoord=new double[]{mCurrentConfig.getGmocratorfixcoord().getX(),mCurrentConfig.getGmocratorfixcoord().getY(),mCurrentConfig.getGmocratorfixcoord().getZ()};
-        double[] fixedCoor= new double[]{mCurrentConfig.getFixedCoor().getX(),mCurrentConfig.getFixedCoor().getY(),mCurrentConfig.getFixedCoor().getZ()};
-        Inputparameter inputparameter=new Inputparameter(roomCenter,threshold_x_y,false,new double[]{},fixedCoor,new double[]{});
+        double[] ref_Coord = new double[]{mCurrentConfig.getRef_Coord().getX(),mCurrentConfig.getRef_Coord().getY(),mCurrentConfig.getRef_Coord().getZ()};
+        double gmocatordeg = mCurrentConfig.getGmocator_deg();
+        double jingweideg = mCurrentConfig.getJingweideg();
+        boolean is_l1_pse = mCurrentConfig.getIspsemodeL1();
+
+        Inputparameter inputparameter=new Inputparameter(roomCenter,threshold_x_y,
+                ref_Coord,gmocratorfixcoord,gmocatordeg,jingweideg,is_l1_pse);
+
+        inputparameter.setListL1(mCurrentConfig.getListL1());
+        inputparameter.setListL5(mCurrentConfig.getListL5());
+
         ipsCoreRunner.updateInputData(s,inputparameter);
+
         Log.d("IndoorPositionService", "setInfoAndStartup");
         boolean gnssStatus = ipsCoreRunner.startUp();
         if (gnssStatus) {
