@@ -48,9 +48,17 @@ public class IndoorPositionProcessor {
     return IPSJNI.IndoorPositionProcessor_initialAPBCKFTwoDimen();
   }
 
-  public IndoorPositionMeasurement run(SatelliteIndoorMeasurementList L1inputMeasurements, SatelliteIndoorMeasurementList L5inputMeasurements, Inputparameter inputparameter) {
-    long cPtr = IPSJNI.IndoorPositionProcessor_run(swigCPtr, this, SatelliteIndoorMeasurementList.getCPtr(L1inputMeasurements), L1inputMeasurements, SatelliteIndoorMeasurementList.getCPtr(L5inputMeasurements), L5inputMeasurements, Inputparameter.getCPtr(inputparameter), inputparameter);
+  public static int initialPseKF() {
+    return IPSJNI.IndoorPositionProcessor_initialPseKF();
+  }
+
+  public IndoorPositionMeasurement run(SatelliteIndoorMeasurementList L1inputMeasurements, SatelliteIndoorMeasurementList L5inputMeasurements, EnviromentData enviromentData) {
+    long cPtr = IPSJNI.IndoorPositionProcessor_run(swigCPtr, this, SatelliteIndoorMeasurementList.getCPtr(L1inputMeasurements), L1inputMeasurements, SatelliteIndoorMeasurementList.getCPtr(L5inputMeasurements), L5inputMeasurements, EnviromentData.getCPtr(enviromentData), enviromentData);
     return (cPtr == 0) ? null : new IndoorPositionMeasurement(cPtr, true);
+  }
+
+  public void setInputparameter(Inputparameter input) {
+    IPSJNI.IndoorPositionProcessor_setInputparameter(swigCPtr, this, Inputparameter.getCPtr(input), input);
   }
 
   public IndoorPositionProcessor() {

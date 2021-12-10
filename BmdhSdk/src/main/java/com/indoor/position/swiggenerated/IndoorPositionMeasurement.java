@@ -40,32 +40,12 @@ public class IndoorPositionMeasurement {
     }
   }
 
-  public void setDescription(String desc) {
-    IPSJNI.IndoorPositionMeasurement_setDescription(swigCPtr, this, desc);
+  public void setResult(double[] value) {
+    IPSJNI.IndoorPositionMeasurement_result_set(swigCPtr, this, value);
   }
 
-  public void setX(double value) {
-    IPSJNI.IndoorPositionMeasurement_x_set(swigCPtr, this, value);
-  }
-
-  public double getX() {
-    return IPSJNI.IndoorPositionMeasurement_x_get(swigCPtr, this);
-  }
-
-  public void setY(double value) {
-    IPSJNI.IndoorPositionMeasurement_y_set(swigCPtr, this, value);
-  }
-
-  public double getY() {
-    return IPSJNI.IndoorPositionMeasurement_y_get(swigCPtr, this);
-  }
-
-  public void setZ(double value) {
-    IPSJNI.IndoorPositionMeasurement_z_set(swigCPtr, this, value);
-  }
-
-  public double getZ() {
-    return IPSJNI.IndoorPositionMeasurement_z_get(swigCPtr, this);
+  public double[] getResult() {
+    return IPSJNI.IndoorPositionMeasurement_result_get(swigCPtr, this);
   }
 
   public void setLocatestate(int value) {
@@ -76,104 +56,104 @@ public class IndoorPositionMeasurement {
     return IPSJNI.IndoorPositionMeasurement_locatestate_get(swigCPtr, this);
   }
 
-  public void setL5_x(double value) {
-    IPSJNI.IndoorPositionMeasurement_L5_x_set(swigCPtr, this, value);
+  public void setL5_result(double[] value) {
+    IPSJNI.IndoorPositionMeasurement_L5_result_set(swigCPtr, this, value);
   }
 
-  public double getL5_x() {
-    return IPSJNI.IndoorPositionMeasurement_L5_x_get(swigCPtr, this);
+  public double[] getL5_result() {
+    return IPSJNI.IndoorPositionMeasurement_L5_result_get(swigCPtr, this);
   }
 
-  public void setL5_y(double value) {
-    IPSJNI.IndoorPositionMeasurement_L5_y_set(swigCPtr, this, value);
+  public void setL5_locatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_L5_locatestate_set(swigCPtr, this, value);
   }
 
-  public double getL5_y() {
-    return IPSJNI.IndoorPositionMeasurement_L5_y_get(swigCPtr, this);
+  public int getL5_locatestate() {
+    return IPSJNI.IndoorPositionMeasurement_L5_locatestate_get(swigCPtr, this);
   }
 
-  public void setL5_z(double value) {
-    IPSJNI.IndoorPositionMeasurement_L5_z_set(swigCPtr, this, value);
+  public void setL1_result(double[] value) {
+    IPSJNI.IndoorPositionMeasurement_L1_result_set(swigCPtr, this, value);
   }
 
-  public double getL5_z() {
-    return IPSJNI.IndoorPositionMeasurement_L5_z_get(swigCPtr, this);
+  public double[] getL1_result() {
+    return IPSJNI.IndoorPositionMeasurement_L1_result_get(swigCPtr, this);
   }
 
-  public void setL5locatestate(int value) {
-    IPSJNI.IndoorPositionMeasurement_L5locatestate_set(swigCPtr, this, value);
+  public void setL1_locatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_L1_locatestate_set(swigCPtr, this, value);
   }
 
-  public int getL5locatestate() {
-    return IPSJNI.IndoorPositionMeasurement_L5locatestate_get(swigCPtr, this);
+  public int getL1_locatestate() {
+    return IPSJNI.IndoorPositionMeasurement_L1_locatestate_get(swigCPtr, this);
   }
 
-  public void setL1_x(double value) {
-    IPSJNI.IndoorPositionMeasurement_L1_x_set(swigCPtr, this, value);
+  public void setL5_kf_result(double[] value) {
+    IPSJNI.IndoorPositionMeasurement_L5_kf_result_set(swigCPtr, this, value);
   }
 
-  public double getL1_x() {
-    return IPSJNI.IndoorPositionMeasurement_L1_x_get(swigCPtr, this);
+  public double[] getL5_kf_result() {
+    return IPSJNI.IndoorPositionMeasurement_L5_kf_result_get(swigCPtr, this);
   }
 
-  public void setL1_y(double value) {
-    IPSJNI.IndoorPositionMeasurement_L1_y_set(swigCPtr, this, value);
+  public void setL5_kf_locatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_L5_kf_locatestate_set(swigCPtr, this, value);
   }
 
-  public double getL1_y() {
-    return IPSJNI.IndoorPositionMeasurement_L1_y_get(swigCPtr, this);
+  public int getL5_kf_locatestate() {
+    return IPSJNI.IndoorPositionMeasurement_L5_kf_locatestate_get(swigCPtr, this);
   }
 
-  public void setL1_z(double value) {
-    IPSJNI.IndoorPositionMeasurement_L1_z_set(swigCPtr, this, value);
+  public void setL1_kf_result(double[] value) {
+    IPSJNI.IndoorPositionMeasurement_L1_kf_result_set(swigCPtr, this, value);
   }
 
-  public double getL1_z() {
-    return IPSJNI.IndoorPositionMeasurement_L1_z_get(swigCPtr, this);
+  public double[] getL1_kf_result() {
+    return IPSJNI.IndoorPositionMeasurement_L1_kf_result_get(swigCPtr, this);
   }
 
-  public void setL1locatestate(int value) {
-    IPSJNI.IndoorPositionMeasurement_L1locatestate_set(swigCPtr, this, value);
+  public void setL1_kf_locatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_L1_kf_locatestate_set(swigCPtr, this, value);
   }
 
-  public int getL1locatestate() {
-    return IPSJNI.IndoorPositionMeasurement_L1locatestate_get(swigCPtr, this);
+  public int getL1_kf_locatestate() {
+    return IPSJNI.IndoorPositionMeasurement_L1_kf_locatestate_get(swigCPtr, this);
   }
 
-  public void setL5kf_x(double value) {
-    IPSJNI.IndoorPositionMeasurement_L5kf_x_set(swigCPtr, this, value);
+  public void setCarrier_result(double[] value) {
+    IPSJNI.IndoorPositionMeasurement_carrier_result_set(swigCPtr, this, value);
   }
 
-  public double getL5kf_x() {
-    return IPSJNI.IndoorPositionMeasurement_L5kf_x_get(swigCPtr, this);
+  public double[] getCarrier_result() {
+    return IPSJNI.IndoorPositionMeasurement_carrier_result_get(swigCPtr, this);
   }
 
-  public void setL5kf_y(double value) {
-    IPSJNI.IndoorPositionMeasurement_L5kf_y_set(swigCPtr, this, value);
+  public void setCarrier_locatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_carrier_locatestate_set(swigCPtr, this, value);
   }
 
-  public double getL5kf_y() {
-    return IPSJNI.IndoorPositionMeasurement_L5kf_y_get(swigCPtr, this);
+  public int getCarrier_locatestate() {
+    return IPSJNI.IndoorPositionMeasurement_carrier_locatestate_get(swigCPtr, this);
   }
 
-  public void setL5kf_z(double value) {
-    IPSJNI.IndoorPositionMeasurement_L5kf_z_set(swigCPtr, this, value);
+  public void setPse_exp_result(double[] value) {
+    IPSJNI.IndoorPositionMeasurement_pse_exp_result_set(swigCPtr, this, value);
   }
 
-  public double getL5kf_z() {
-    return IPSJNI.IndoorPositionMeasurement_L5kf_z_get(swigCPtr, this);
+  public double[] getPse_exp_result() {
+    return IPSJNI.IndoorPositionMeasurement_pse_exp_result_get(swigCPtr, this);
   }
 
-  public void setL5kflocatestate(int value) {
-    IPSJNI.IndoorPositionMeasurement_L5kflocatestate_set(swigCPtr, this, value);
+  public void setPse_exp_locatestate(int value) {
+    IPSJNI.IndoorPositionMeasurement_pse_exp_locatestate_set(swigCPtr, this, value);
   }
 
-  public int getL5kflocatestate() {
-    return IPSJNI.IndoorPositionMeasurement_L5kflocatestate_get(swigCPtr, this);
+  public int getPse_exp_locatestate() {
+    return IPSJNI.IndoorPositionMeasurement_pse_exp_locatestate_get(swigCPtr, this);
   }
 
-  public IndoorPositionMeasurement(double x, double y, double z, boolean s, int locatestate) {
-    this(IPSJNI.new_IndoorPositionMeasurement(x, y, z, s, locatestate), true);
+  public IndoorPositionMeasurement(double x, double y, double z, double t_f, boolean s, int inlocatestate) {
+    this(IPSJNI.new_IndoorPositionMeasurement(x, y, z, t_f, s, inlocatestate), true);
   }
 
   public double getXAxisCoordinate() {
@@ -190,6 +170,14 @@ public class IndoorPositionMeasurement {
 
   public int getlocatestate() {
     return IPSJNI.IndoorPositionMeasurement_getlocatestate(swigCPtr, this);
+  }
+
+  public void setDescription(String desc) {
+    IPSJNI.IndoorPositionMeasurement_setDescription(swigCPtr, this, desc);
+  }
+
+  public void addDescription(String desc) {
+    IPSJNI.IndoorPositionMeasurement_addDescription(swigCPtr, this, desc);
   }
 
   public String getDescription() {

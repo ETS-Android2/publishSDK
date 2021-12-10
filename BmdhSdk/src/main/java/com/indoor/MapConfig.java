@@ -28,16 +28,18 @@ public class MapConfig implements Serializable {
         private RoomCenterDTO roomCenter;
         @SerializedName("threshold_x_y")
         private ThresholdXYDTO thresholdXY;
-        @SerializedName("fixedCoor")
-        private FixedCoorDTO fixedCoor;
+        @SerializedName("ref_Coord")
+        private RefCoordDTO ref_Coord;
         @SerializedName("listL1")
-        private List<Integer> listL1;
+        private String listL1;
         @SerializedName("listL5")
-        private List<Integer> listL5;
+        private String listL5;
         @SerializedName("gmocratorfixcoord")
         private GmocratorfixcoordDTO gmocratorfixcoord;
-        @SerializedName("gdegZfixcoord")
-        private Double gdegZfixcoord;
+        @SerializedName("gmocatordeg")
+        private Double gmocator_deg;
+        @SerializedName("jingweideg")
+        private Double jingweideg;
         @SerializedName("ispsemodeL1")
         private Boolean ispsemodeL1;
         @Keep
@@ -61,7 +63,7 @@ public class MapConfig implements Serializable {
         @Keep
         @NoArgsConstructor
         @Data
-        public static class FixedCoorDTO {
+        public static class RefCoordDTO {
             @SerializedName("x")
             private Double x;
             @SerializedName("y")

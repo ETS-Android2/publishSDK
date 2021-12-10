@@ -36,6 +36,10 @@ public class Inputparameter {
     }
   }
 
+  public Inputparameter() {
+    this(IPSJNI.new_Inputparameter__SWIG_0(), true);
+  }
+
   public void setRoomCenter(double[] value) {
     IPSJNI.Inputparameter_roomCenter_set(swigCPtr, this, value);
   }
@@ -52,64 +56,92 @@ public class Inputparameter {
     return IPSJNI.Inputparameter_threshold_x_y_get(swigCPtr, this);
   }
 
-  public void setBluetoothCheckResult(boolean value) {
-    IPSJNI.Inputparameter_bluetoothCheckResult_set(swigCPtr, this, value);
+  public void setRef_Coord(double[] value) {
+    IPSJNI.Inputparameter_ref_Coord_set(swigCPtr, this, value);
   }
 
-  public boolean getBluetoothCheckResult() {
-    return IPSJNI.Inputparameter_bluetoothCheckResult_get(swigCPtr, this);
+  public double[] getRef_Coord() {
+    return IPSJNI.Inputparameter_ref_Coord_get(swigCPtr, this);
   }
 
-  public void setBluetoothReferLocation(double[] value) {
-    IPSJNI.Inputparameter_bluetoothReferLocation_set(swigCPtr, this, value);
+  public void setMocrator_fix_coord(double[] value) {
+    IPSJNI.Inputparameter_mocrator_fix_coord_set(swigCPtr, this, value);
   }
 
-  public double[] getBluetoothReferLocation() {
-    return IPSJNI.Inputparameter_bluetoothReferLocation_get(swigCPtr, this);
+  public double[] getMocrator_fix_coord() {
+    return IPSJNI.Inputparameter_mocrator_fix_coord_get(swigCPtr, this);
   }
 
-  public void setFixedCoor(double[] value) {
-    IPSJNI.Inputparameter_fixedCoor_set(swigCPtr, this, value);
+  public void setMocrator_deg(double value) {
+    IPSJNI.Inputparameter_mocrator_deg_set(swigCPtr, this, value);
   }
 
-  public double[] getFixedCoor() {
-    return IPSJNI.Inputparameter_fixedCoor_get(swigCPtr, this);
+  public double getMocrator_deg() {
+    return IPSJNI.Inputparameter_mocrator_deg_get(swigCPtr, this);
   }
 
-  public void setStepjingwei(double[] value) {
-    IPSJNI.Inputparameter_stepjingwei_set(swigCPtr, this, value);
+  public void setJingwei_deg(double value) {
+    IPSJNI.Inputparameter_jingwei_deg_set(swigCPtr, this, value);
   }
 
-  public double[] getStepjingwei() {
-    return IPSJNI.Inputparameter_stepjingwei_get(swigCPtr, this);
+  public double getJingwei_deg() {
+    return IPSJNI.Inputparameter_jingwei_deg_get(swigCPtr, this);
   }
 
-  public void setroomCenter(double[] p) {
-    IPSJNI.Inputparameter_setroomCenter(swigCPtr, this, p);
+  public void setIs_L1_pse(boolean value) {
+    IPSJNI.Inputparameter_is_L1_pse_set(swigCPtr, this, value);
   }
 
-  public void setthreshold_x_y(double[] p) {
-    IPSJNI.Inputparameter_setthreshold_x_y(swigCPtr, this, p);
+  public boolean getIs_L1_pse() {
+    return IPSJNI.Inputparameter_is_L1_pse_get(swigCPtr, this);
   }
 
-  public void setbluetoothCheckResult(boolean p) {
-    IPSJNI.Inputparameter_setbluetoothCheckResult(swigCPtr, this, p);
+  public void setListL1(String value) {
+    IPSJNI.Inputparameter_listL1_set(swigCPtr, this, value);
   }
 
-  public void setbluetoothReferLocation(double[] p) {
-    IPSJNI.Inputparameter_setbluetoothReferLocation(swigCPtr, this, p);
+  public String getListL1() {
+    return IPSJNI.Inputparameter_listL1_get(swigCPtr, this);
   }
 
-  public void setfixedCoor(double[] p) {
-    IPSJNI.Inputparameter_setfixedCoor(swigCPtr, this, p);
+  public void setListL5(String value) {
+    IPSJNI.Inputparameter_listL5_set(swigCPtr, this, value);
   }
 
-  public void setstepjingwei(double[] p) {
-    IPSJNI.Inputparameter_setstepjingwei(swigCPtr, this, p);
+  public String getListL5() {
+    return IPSJNI.Inputparameter_listL5_get(swigCPtr, this);
   }
 
-  public Inputparameter(double[] proomCenter, double[] pthreshold_x_y, boolean pbluetoothCheckResult, double[] pbluetoothReferLocation, double[] pfixedCoor, double[] pstepjingwei) {
-    this(IPSJNI.new_Inputparameter(proomCenter, pthreshold_x_y, pbluetoothCheckResult, pbluetoothReferLocation, pfixedCoor, pstepjingwei), true);
+  public void set_roomCenter(double[] p) {
+    IPSJNI.Inputparameter_set_roomCenter(swigCPtr, this, p);
+  }
+
+  public void set_threshold_x_y(double[] p) {
+    IPSJNI.Inputparameter_set_threshold_x_y(swigCPtr, this, p);
+  }
+
+  public void set_refCoord(double[] p) {
+    IPSJNI.Inputparameter_set_refCoord(swigCPtr, this, p);
+  }
+
+  public void set_mocrator_fix_coord(double[] p) {
+    IPSJNI.Inputparameter_set_mocrator_fix_coord(swigCPtr, this, p);
+  }
+
+  public void set_mocrator_deg(double p) {
+    IPSJNI.Inputparameter_set_mocrator_deg(swigCPtr, this, p);
+  }
+
+  public void set_jingwei_deg(double p) {
+    IPSJNI.Inputparameter_set_jingwei_deg(swigCPtr, this, p);
+  }
+
+  public void set_is_L1_pse(boolean p) {
+    IPSJNI.Inputparameter_set_is_L1_pse(swigCPtr, this, p);
+  }
+
+  public Inputparameter(double[] p_roomCenter, double[] p_threshold_x_y, double[] p_ref_Coord, double[] p_mocrator_fix_coord, double p_mocrator_deg, double p_jingwei_deg, boolean pis_L1_pse) {
+    this(IPSJNI.new_Inputparameter__SWIG_1(p_roomCenter, p_threshold_x_y, p_ref_Coord, p_mocrator_fix_coord, p_mocrator_deg, p_jingwei_deg, pis_L1_pse), true);
   }
 
 }
