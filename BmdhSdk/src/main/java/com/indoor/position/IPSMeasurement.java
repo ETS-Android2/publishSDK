@@ -25,7 +25,7 @@ public class IPSMeasurement implements Parcelable {
     double vx;
     double vy;
     double vz;
-    long mapID;
+    String mapID;
     public Mode mode;
     public enum Mode {
         PARK,
@@ -39,7 +39,7 @@ public class IPSMeasurement implements Parcelable {
         vx = in.readDouble();
         vy = in.readDouble();
         vz = in.readDouble();
-        mapID = in.readLong();
+        mapID = in.readString();
         mode = Mode.values()[in.readInt()];
         text = in.readString();
     }
@@ -80,7 +80,7 @@ public class IPSMeasurement implements Parcelable {
         parcel.writeDouble(vx);
         parcel.writeDouble(vy);
         parcel.writeDouble(vz);
-        parcel.writeLong(mapID);
+        parcel.writeString(mapID);
         parcel.writeInt(mode.ordinal());
     }
 

@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "com.bmdh.bmdhsdkgenerate"
         minSdkVersion 24
-        targetSdkVersion 31
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
 
@@ -37,5 +37,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
-    implementation project(path :':BmdhSdk')
+    api project(path :':BmdhSdk')
 }

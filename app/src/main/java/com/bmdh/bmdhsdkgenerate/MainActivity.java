@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements IPSMeasurement.Ca
                         startNewLog();
                         startlog.setText("Logging");
                         startlog.setBackgroundColor(Color.TRANSPARENT);
-                        startlog.setSaveEnabled(false);
+                        startlog.setEnabled(false);
 
                     }
                 });
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements IPSMeasurement.Ca
                         recordend();
                         startlog.setText("StartLog");
                         startlog.setBackgroundColor(Color.BLUE);
-                        startlog.setSaveEnabled(true);
+                        startlog.setEnabled(true);
                     }
                 });
         timer = new Timer();
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements IPSMeasurement.Ca
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                AzimuthIndoorSDK.getInstance().startIndoorLocation(3, MainActivity.this);
+                AzimuthIndoorSDK.getInstance().startIndoorLocation("000004", MainActivity.this);
             }
         },5000);
     }

@@ -9,10 +9,12 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 /**
- * Created by Aaron on 2016/1/24.
+ *
+ * @author Aaron
+ * @date 2016/1/24
  * 编码解码相关工具类
  */
-public class RxEncodeUtils {
+public class RxEncodeTool {
 
     /**
      * URL编码

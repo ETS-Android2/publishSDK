@@ -21,7 +21,7 @@ public class MapConfig implements Serializable {
     @Data
     public static class DataConfigDTO {
         @SerializedName("mapid")
-        private Long mapid;
+        private String mapid;
         @SerializedName("SatelliteInfo")
         private List<SatelliteInfoDTO> satelliteInfo;
         @SerializedName("roomCenter")
@@ -42,6 +42,8 @@ public class MapConfig implements Serializable {
         private Double jingweideg;
         @SerializedName("ispsemodeL1")
         private Boolean ispsemodeL1;
+        @SerializedName("versionNum")
+        private int versionNum;
         @Keep
         @NoArgsConstructor
         @Data

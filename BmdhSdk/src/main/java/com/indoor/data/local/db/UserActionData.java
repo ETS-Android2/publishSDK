@@ -1,17 +1,23 @@
 package com.indoor.data.local.db;
 
+import androidx.annotation.Keep;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 /**
- * "remoteId": 13,
- * "actFlag": "forward",
- * "actVal": "1",
- * "actTime": "2019-10-01 00:00:00",
- * "unitId": 3
- * appid,uuid,mapid,fnum,isIndoor,当前经纬度，出入口蓝牙设备的唯一码，json(坐标位置信息)
+ "apiKey": "",
+ "floorNum": "",
+ "ipsInfo": "",
+ "latitude": 0,
+ "longitude": 0,
+ "positionState": 0,
+ "projectAreaId": "",
+ "uuid": ""，
+ ”machineOs“:"",
+ "machineManu":""
  */
+@Keep
 @Entity
 public class UserActionData {
     @PrimaryKey(autoGenerate = true)
@@ -20,18 +26,25 @@ public class UserActionData {
     public String apiKey;
     @ColumnInfo(name = "uuid")
     public String uuid;
-    @ColumnInfo(name = "mapId")
-    public String mapId;
     @ColumnInfo(name = "floorNum")
     public String floorNum;
     @ColumnInfo(name = "positionState")
     public int positionState;
-    @ColumnInfo(name = "locationLatitude")
-    public String locationLatitude;
-    @ColumnInfo(name = "locationLongitude")
-    public String locationLongitude;
+    @ColumnInfo(name = "latitude")
+    public String latitude;
+    @ColumnInfo(name = "longitude")
+    public String longitude;
     @ColumnInfo(name = "ipsInfo")
     public String ipsInfo;
+    @ColumnInfo(name = "projectAreaId")
+    public String projectAreaId;
+    //机器系统版本
+    @ColumnInfo(name = "machineOs")
+    public String machineOs;
+    //机器制造厂商
+    @ColumnInfo(name = "machineManu")
+    public String machineManu;
+
 
 
 }

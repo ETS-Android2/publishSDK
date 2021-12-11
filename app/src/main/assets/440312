@@ -1,6 +1,6 @@
 {
 	"dataConfig": [{
-			"mapid": 4,
+			"mapid": "000004",
 			"SatelliteInfo": [{
 					"x": -4.4896,
 					"y": -0.9689,
@@ -118,6 +118,7 @@
 				"x": 15,
 				"y": 10
 			},
+
 			"ref_Coord": {
 				"x": 0,
 				"y": 0,
@@ -133,5 +134,6 @@
 			"gmocatordeg": 4.3907,
 			"jingweideg": 4.3907,
 			"ispsemodeL1": true
-		}]
+		},
+]
 }

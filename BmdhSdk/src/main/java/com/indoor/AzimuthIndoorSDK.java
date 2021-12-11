@@ -3,9 +3,13 @@ package com.indoor;
 import android.content.Context;
 import androidx.annotation.Keep;
 
+import com.indoor.data.http.BaseResponse;
 import com.indoor.position.IPSMeasurement;
 import com.indoor.utils.KLog;
 import com.indoor.utils.Utils;
+
+import io.reactivex.Observable;
+
 @Keep
 public class AzimuthIndoorSDK {
     private static final String TAG = "AzimuthIndoorSDK";
@@ -59,7 +63,7 @@ public class AzimuthIndoorSDK {
      *
      * @param callback 获取到位置信息后的回调，1s回调一次
      */
-    public void startIndoorLocation(long mapId, IPSMeasurement.Callback callback) {
+    public void startIndoorLocation(String mapId, IPSMeasurement.Callback callback) {
         if (mAzimuthIndoorStrategy == null) {
             KLog.e(TAG, "mAzimuthIndoorStrategy is null");
             return;
@@ -87,9 +91,26 @@ public class AzimuthIndoorSDK {
         mContext = context.getApplicationContext();
         KLog.init(true);
         Utils.init(context);
+        //TODO 配置文件检测更新
         mAzimuthIndoorConfig = azimuthIndoorConfig;
         mAzimuthIndoorStrategy = new AzimuthIndoorStrategy(mContext);
-//        mAzimuthIndoorStrategy.verifySDK(iInitSDKListener);
+        mAzimuthIndoorStrategy.verifySDK(iInitSDKListener);
+    }
+
+    /**
+     * 更新区域配置文件
+     *
+     */
+    public void refreshAreaConfig(String areaId){
+        mAzimuthIndoorStrategy.refreshAreaConfig(areaId);
+    }
+
+    /**
+     * 更新市配置文件
+     *
+     */
+    public void refreshCityConfig(String areaId){
+        mAzimuthIndoorStrategy.refreshAreaConfig(areaId);
     }
 
 

@@ -2,6 +2,7 @@ package com.indoor.data.http;
 
 import com.indoor.data.entity.author.AuthorData;
 import com.indoor.data.entity.author.AuthorResponse;
+import com.indoor.data.entity.projectareo.ProjectAreaData;
 import com.indoor.data.http.service.IndoorApiService;
 import com.indoor.data.local.db.UserActionData;
 import com.indoor.utils.KLog;
@@ -15,6 +16,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import retrofit2.http.Body;
+import retrofit2.http.Header;
 
 /**
  * Created by Aaron on  2019/3/26.
@@ -45,12 +47,17 @@ public class HttpDataSourceImpl implements HttpDataSource {
 
 
     @Override
-    public Observable<BaseResponse<String>> submitLogRecord(List<UserActionData> userActionDatas) {
-       return mIndoorApiService.submitLogRecord(userActionDatas);
+    public Observable<BaseResponse<String>> submitLogRecord(@Header("Access-Token") String token, @Body List<UserActionData> userActionDatas) {
+       return mIndoorApiService.submitLogRecord(token,userActionDatas);
     }
 
     @Override
     public Observable<BaseResponse<String>> verifyAuth(AuthorData authorData) {
         return mIndoorApiService.verifyAuth(authorData);
+    }
+
+    @Override
+    public Observable<BaseResponse<String>> getProjectAreaData(ProjectAreaData projectArea) {
+        return mIndoorApiService.getProjectAreaData(projectArea);
     }
 }

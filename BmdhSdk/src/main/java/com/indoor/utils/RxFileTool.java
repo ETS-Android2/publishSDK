@@ -15,6 +15,8 @@
  */
 package com.indoor.utils;
 
+import static com.indoor.utils.RxConstTool.KB;
+
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentUris;
@@ -28,12 +30,15 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import androidx.core.content.FileProvider;
+import android.util.Base64;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,8 +60,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
-import static com.indoor.utils.RxConstUtils.KB;
-
 //import android.util.Log;
 
 /**
@@ -64,10 +67,10 @@ import static com.indoor.utils.RxConstUtils.KB;
  *
  * @author Aaron.
  */
-public class RxFileUtils {
+public class RxFileTool {
 
     public static final int BUFSIZE = 1024 * 8;
-    private static final String TAG = "RxFileUtils";
+    private static final String TAG = "RxFileTool";
 
     /**
      * 得到SD卡根目录.
@@ -88,7 +91,7 @@ public class RxFileUtils {
      *
      * @return
      */
-    public static File getCecheFolder(Context context) {
+    public static File getCacheFolder(Context context) {
         File folder = new File(context.getCacheDir(), "IMAGECACHE");
         if (!folder.exists()) {
             folder.mkdir();
@@ -112,7 +115,9 @@ public class RxFileUtils {
      * @return SD卡路径
      */
     public static String getSDCardPath() {
-        if (!isSDCardEnable()) return "sdcard unable!";
+        if (!isSDCardEnable()) {
+            return "sdcard unable!";
+        }
         return Environment.getExternalStorageDirectory().getPath() + File.separator;
     }
 
@@ -122,7 +127,9 @@ public class RxFileUtils {
      * @return SD卡Data路径
      */
     public static String getDataPath() {
-        if (!isSDCardEnable()) return "sdcard unable!";
+        if (!isSDCardEnable()) {
+            return "sdcard unable!";
+        }
         return Environment.getDataDirectory().getPath();
     }
 
@@ -133,12 +140,14 @@ public class RxFileUtils {
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     public static String getFreeSpace() {
-        if (!isSDCardEnable()) return "sdcard unable!";
+        if (!isSDCardEnable()) {
+            return "sdcard unable!";
+        }
         StatFs stat = new StatFs(getSDCardPath());
         long blockSize, availableBlocks;
         availableBlocks = stat.getAvailableBlocksLong();
         blockSize = stat.getBlockSizeLong();
-        return RxDataUtils.byte2FitSize(availableBlocks * blockSize);
+        return RxDataTool.byte2FitSize(availableBlocks * blockSize);
     }
 
     /**
@@ -148,8 +157,9 @@ public class RxFileUtils {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File sd = new File(Environment.getExternalStorageDirectory().getPath());
             return sd.canWrite();
-        } else
+        } else {
             return false;
+        }
     }
 
     /**
@@ -204,19 +214,29 @@ public class RxFileUtils {
      * @return {@code true}: 删除成功<br>{@code false}: 删除失败
      */
     public static boolean deleteFilesInDir(File dir) {
-        if (dir == null) return false;
+        if (dir == null) {
+            return false;
+        }
         // 目录不存在返回true
-        if (!dir.exists()) return true;
+        if (!dir.exists()) {
+            return true;
+        }
         // 不是目录返回false
-        if (!dir.isDirectory()) return false;
+        if (!dir.isDirectory()) {
+            return false;
+        }
         // 现在文件存在且是文件夹
         File[] files = dir.listFiles();
         if (files != null && files.length != 0) {
             for (File file : files) {
                 if (file.isFile()) {
-                    if (!deleteFile(file)) return false;
+                    if (!deleteFile(file)) {
+                        return false;
+                    }
                 } else if (file.isDirectory()) {
-                    if (!deleteDir(file)) return false;
+                    if (!deleteDir(file)) {
+                        return false;
+                    }
                 }
             }
         }
@@ -230,7 +250,7 @@ public class RxFileUtils {
      * @return {@code true}: 清除成功<br>{@code false}: 清除失败
      */
     public static boolean cleanInternalCache(Context context) {
-        return RxFileUtils.deleteFilesInDir(context.getCacheDir());
+        return RxFileTool.deleteFilesInDir(context.getCacheDir());
     }
 
     /**
@@ -240,7 +260,7 @@ public class RxFileUtils {
      * @return {@code true}: 清除成功<br>{@code false}: 清除失败
      */
     public static boolean cleanInternalFiles(Context context) {
-        return RxFileUtils.deleteFilesInDir(context.getFilesDir());
+        return RxFileTool.deleteFilesInDir(context.getFilesDir());
     }
 
     /**
@@ -250,7 +270,7 @@ public class RxFileUtils {
      * @return {@code true}: 清除成功<br>{@code false}: 清除失败
      */
     public static boolean cleanInternalDbs(Context context) {
-        return RxFileUtils.deleteFilesInDir(context.getFilesDir().getParent() + File.separator + "databases");
+        return RxFileTool.deleteFilesInDir(context.getFilesDir().getParent() + File.separator + "databases");
     }
 
     /**
@@ -271,7 +291,7 @@ public class RxFileUtils {
      * @return {@code true}: 清除成功<br>{@code false}: 清除失败
      */
     public static boolean cleanInternalSP(Context context) {
-        return RxFileUtils.deleteFilesInDir(context.getFilesDir().getParent() + File.separator + "shared_prefs");
+        return RxFileTool.deleteFilesInDir(context.getFilesDir().getParent() + File.separator + "shared_prefs");
     }
 
     /**
@@ -281,7 +301,7 @@ public class RxFileUtils {
      * @return {@code true}: 清除成功<br>{@code false}: 清除失败
      */
     public static boolean cleanExternalCache(Context context) {
-        return RxFileUtils.isSDCardEnable() && RxFileUtils.deleteFilesInDir(context.getExternalCacheDir());
+        return RxFileTool.isSDCardEnable() && RxFileTool.deleteFilesInDir(context.getExternalCacheDir());
     }
 
     /**
@@ -291,7 +311,7 @@ public class RxFileUtils {
      * @return {@code true}: 清除成功<br>{@code false}: 清除失败
      */
     public static boolean cleanCustomCache(String dirPath) {
-        return RxFileUtils.deleteFilesInDir(dirPath);
+        return RxFileTool.deleteFilesInDir(dirPath);
     }
 
     /**
@@ -301,7 +321,7 @@ public class RxFileUtils {
      * @return {@code true}: 清除成功<br>{@code false}: 清除失败
      */
     public static boolean cleanCustomCache(File dir) {
-        return RxFileUtils.deleteFilesInDir(dir);
+        return RxFileTool.deleteFilesInDir(dir);
     }
 
     /**
@@ -731,7 +751,7 @@ public class RxFileUtils {
      * @return 文件
      */
     public static File getFileByPath(String filePath) {
-        return RxDataUtils.isNullString(filePath) ? null : new File(filePath);
+        return RxDataTool.isNullString(filePath) ? null : new File(filePath);
     }
     //==============================================================================================
 
@@ -833,10 +853,16 @@ public class RxFileUtils {
      * @return {@code true}: 存在或创建成功<br>{@code false}: 不存在或创建失败
      */
     public static boolean createOrExistsFile(File file) {
-        if (file == null) return false;
+        if (file == null) {
+            return false;
+        }
         // 如果存在，是文件则返回true，是目录则返回false
-        if (file.exists()) return file.isFile();
-        if (!createOrExistsDir(file.getParentFile())) return false;
+        if (file.exists()) {
+            return file.isFile();
+        }
+        if (!createOrExistsDir(file.getParentFile())) {
+            return false;
+        }
         try {
             return file.createNewFile();
         } catch (IOException e) {
@@ -862,11 +888,17 @@ public class RxFileUtils {
      * @return {@code true}: 创建成功<br>{@code false}: 创建失败
      */
     public static boolean createFileByDeleteOldFile(File file) {
-        if (file == null) return false;
+        if (file == null) {
+            return false;
+        }
         // 文件存在并且删除失败返回false
-        if (file.exists() && file.isFile() && !file.delete()) return false;
+        if (file.exists() && file.isFile() && !file.delete()) {
+            return false;
+        }
         // 创建目录失败返回false
-        if (!createOrExistsDir(file.getParentFile())) return false;
+        if (!createOrExistsDir(file.getParentFile())) {
+            return false;
+        }
         try {
             return file.createNewFile();
         } catch (IOException e) {
@@ -883,7 +915,7 @@ public class RxFileUtils {
      * @param isMove      是否移动
      * @return {@code true}: 复制或移动成功<br>{@code false}: 复制或移动失败
      */
-    private static boolean copyOrMoveDir(String srcDirPath, String destDirPath, boolean isMove) {
+    public static boolean copyOrMoveDir(String srcDirPath, String destDirPath, boolean isMove) {
         return copyOrMoveDir(getFileByPath(srcDirPath), getFileByPath(destDirPath), isMove);
     }
 
@@ -895,28 +927,40 @@ public class RxFileUtils {
      * @param isMove  是否移动
      * @return {@code true}: 复制或移动成功<br>{@code false}: 复制或移动失败
      */
-    private static boolean copyOrMoveDir(File srcDir, File destDir, boolean isMove) {
-        if (srcDir == null || destDir == null) return false;
+    public static boolean copyOrMoveDir(File srcDir, File destDir, boolean isMove) {
+        if (srcDir == null || destDir == null) {
+            return false;
+        }
         // 如果目标目录在源目录中则返回false，看不懂的话好好想想递归怎么结束
         // srcPath : F:\\MyGithub\\AndroidUtilCode\\utilcode\\src\\test\\res
         // destPath: F:\\MyGithub\\AndroidUtilCode\\utilcode\\src\\test\\res1
         // 为防止以上这种情况出现出现误判，须分别在后面加个路径分隔符
         String srcPath = srcDir.getPath() + File.separator;
         String destPath = destDir.getPath() + File.separator;
-        if (destPath.contains(srcPath)) return false;
+        if (destPath.contains(srcPath)) {
+            return false;
+        }
         // 源文件不存在或者不是目录则返回false
-        if (!srcDir.exists() || !srcDir.isDirectory()) return false;
+        if (!srcDir.exists() || !srcDir.isDirectory()) {
+            return false;
+        }
         // 目标目录不存在返回false
-        if (!createOrExistsDir(destDir)) return false;
+        if (!createOrExistsDir(destDir)) {
+            return false;
+        }
         File[] files = srcDir.listFiles();
         for (File file : files) {
             File oneDestFile = new File(destPath + file.getName());
             if (file.isFile()) {
                 // 如果操作失败返回false
-                if (!copyOrMoveFile(file, oneDestFile, isMove)) return false;
+                if (!copyOrMoveFile(file, oneDestFile, isMove)) {
+                    return false;
+                }
             } else if (file.isDirectory()) {
                 // 如果操作失败返回false
-                if (!copyOrMoveDir(file, oneDestFile, isMove)) return false;
+                if (!copyOrMoveDir(file, oneDestFile, isMove)) {
+                    return false;
+                }
             }
         }
         return !isMove || deleteDir(srcDir);
@@ -930,7 +974,7 @@ public class RxFileUtils {
      * @param isMove       是否移动
      * @return {@code true}: 复制或移动成功<br>{@code false}: 复制或移动失败
      */
-    private static boolean copyOrMoveFile(String srcFilePath, String destFilePath, boolean isMove) {
+    public static boolean copyOrMoveFile(String srcFilePath, String destFilePath, boolean isMove) {
         return copyOrMoveFile(getFileByPath(srcFilePath), getFileByPath(destFilePath), isMove);
     }
 
@@ -942,14 +986,22 @@ public class RxFileUtils {
      * @param isMove   是否移动
      * @return {@code true}: 复制或移动成功<br>{@code false}: 复制或移动失败
      */
-    private static boolean copyOrMoveFile(File srcFile, File destFile, boolean isMove) {
-        if (srcFile == null || destFile == null) return false;
+    public static boolean copyOrMoveFile(File srcFile, File destFile, boolean isMove) {
+        if (srcFile == null || destFile == null) {
+            return false;
+        }
         // 源文件不存在或者不是文件则返回false
-        if (!srcFile.exists() || !srcFile.isFile()) return false;
+        if (!srcFile.exists() || !srcFile.isFile()) {
+            return false;
+        }
         // 目标文件存在且是文件则返回false
-        if (destFile.exists() && destFile.isFile()) return false;
+        if (destFile.exists() && destFile.isFile()) {
+            return false;
+        }
         // 目标目录不存在返回false
-        if (!createOrExistsDir(destFile.getParentFile())) return false;
+        if (!createOrExistsDir(destFile.getParentFile())) {
+            return false;
+        }
         try {
             return writeFileFromIS(destFile, new FileInputStream(srcFile), false)
                     && !(isMove && !deleteFile(srcFile));
@@ -1064,18 +1116,28 @@ public class RxFileUtils {
      * @return {@code true}: 删除成功<br>{@code false}: 删除失败
      */
     public static boolean deleteDir(File dir) {
-        if (dir == null) return false;
+        if (dir == null) {
+            return false;
+        }
         // 目录不存在返回true
-        if (!dir.exists()) return true;
+        if (!dir.exists()) {
+            return true;
+        }
         // 不是目录返回false
-        if (!dir.isDirectory()) return false;
+        if (!dir.isDirectory()) {
+            return false;
+        }
         // 现在文件存在且是文件夹
         File[] files = dir.listFiles();
         for (File file : files) {
             if (file.isFile()) {
-                if (!deleteFile(file)) return false;
+                if (!deleteFile(file)) {
+                    return false;
+                }
             } else if (file.isDirectory()) {
-                if (!deleteDir(file)) return false;
+                if (!deleteDir(file)) {
+                    return false;
+                }
             }
         }
         return dir.delete();
@@ -1120,8 +1182,12 @@ public class RxFileUtils {
      * @return 文件链表
      */
     public static List<File> listFilesInDir(File dir, boolean isRecursive) {
-        if (isRecursive) return listFilesInDir(dir);
-        if (dir == null || !isDir(dir)) return null;
+        if (isRecursive) {
+            return listFilesInDir(dir);
+        }
+        if (dir == null || !isDir(dir)) {
+            return null;
+        }
         List<File> list = new ArrayList<>();
         Collections.addAll(list, dir.listFiles());
         return list;
@@ -1144,7 +1210,9 @@ public class RxFileUtils {
      * @return 文件链表
      */
     public static List<File> listFilesInDir(File dir) {
-        if (dir == null || !isDir(dir)) return null;
+        if (dir == null || !isDir(dir)) {
+            return null;
+        }
         List<File> list = new ArrayList<>();
         File[] files = dir.listFiles();
         for (File file : files) {
@@ -1179,8 +1247,12 @@ public class RxFileUtils {
      * @return 文件链表
      */
     public static List<File> listFilesInDirWithFilter(File dir, String suffix, boolean isRecursive) {
-        if (isRecursive) return listFilesInDirWithFilter(dir, suffix);
-        if (dir == null || !isDir(dir)) return null;
+        if (isRecursive) {
+            return listFilesInDirWithFilter(dir, suffix);
+        }
+        if (dir == null || !isDir(dir)) {
+            return null;
+        }
         List<File> list = new ArrayList<>();
         File[] files = dir.listFiles();
         for (File file : files) {
@@ -1212,7 +1284,9 @@ public class RxFileUtils {
      * @return 文件链表
      */
     public static List<File> listFilesInDirWithFilter(File dir, String suffix) {
-        if (dir == null || !isDir(dir)) return null;
+        if (dir == null || !isDir(dir)) {
+            return null;
+        }
         List<File> list = new ArrayList<>();
         File[] files = dir.listFiles();
         for (File file : files) {
@@ -1247,8 +1321,12 @@ public class RxFileUtils {
      * @return 文件链表
      */
     public static List<File> listFilesInDirWithFilter(File dir, FilenameFilter filter, boolean isRecursive) {
-        if (isRecursive) return listFilesInDirWithFilter(dir, filter);
-        if (dir == null || !isDir(dir)) return null;
+        if (isRecursive) {
+            return listFilesInDirWithFilter(dir, filter);
+        }
+        if (dir == null || !isDir(dir)) {
+            return null;
+        }
         List<File> list = new ArrayList<>();
         File[] files = dir.listFiles();
         for (File file : files) {
@@ -1278,7 +1356,9 @@ public class RxFileUtils {
      * @return 文件链表
      */
     public static List<File> listFilesInDirWithFilter(File dir, FilenameFilter filter) {
-        if (dir == null || !isDir(dir)) return null;
+        if (dir == null || !isDir(dir)) {
+            return null;
+        }
         List<File> list = new ArrayList<>();
         File[] files = dir.listFiles();
         for (File file : files) {
@@ -1313,7 +1393,9 @@ public class RxFileUtils {
      * @return 文件链表
      */
     public static List<File> searchFileInDir(File dir, String fileName) {
-        if (dir == null || !isDir(dir)) return null;
+        if (dir == null || !isDir(dir)) {
+            return null;
+        }
         List<File> list = new ArrayList<>();
         File[] files = dir.listFiles();
         for (File file : files) {
@@ -1434,8 +1516,7 @@ public class RxFileUtils {
      * @param charsetName 编码格式
      * @return 包含制定行的list
      */
-    public static List<String> readFile2List(String filePath, int st, int end, String
-            charsetName) {
+    public static List<String> readFile2List(String filePath, int st, int end, String charsetName) {
         return readFile2List(getFileByPath(filePath), st, end, charsetName);
     }
 
@@ -1449,21 +1530,29 @@ public class RxFileUtils {
      * @return 包含从start行到end行的list
      */
     public static List<String> readFile2List(File file, int st, int end, String charsetName) {
-        if (file == null) return null;
-        if (st > end) return null;
+        if (file == null) {
+            return null;
+        }
+        if (st > end) {
+            return null;
+        }
         BufferedReader reader = null;
         try {
             String line;
             int curLine = 1;
             List<String> list = new ArrayList<>();
-            if (RxDataUtils.isNullString(charsetName)) {
+            if (RxDataTool.isNullString(charsetName)) {
                 reader = new BufferedReader(new FileReader(file));
             } else {
                 reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charsetName));
             }
             while ((line = reader.readLine()) != null) {
-                if (curLine > end) break;
-                if (st <= curLine && curLine <= end) list.add(line);
+                if (curLine > end) {
+                    break;
+                }
+                if (st <= curLine && curLine <= end) {
+                    list.add(line);
+                }
                 ++curLine;
             }
             return list;
@@ -1494,11 +1583,13 @@ public class RxFileUtils {
      * @return 字符串
      */
     public static String readFile2String(File file, String charsetName) {
-        if (file == null) return null;
+        if (file == null) {
+            return null;
+        }
         BufferedReader reader = null;
         try {
             StringBuilder sb = new StringBuilder();
-            if (RxDataUtils.isNullString(charsetName)) {
+            if (RxDataTool.isNullString(charsetName)) {
                 reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
             } else {
                 reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charsetName));
@@ -1534,9 +1625,11 @@ public class RxFileUtils {
      * @return StringBuilder对象
      */
     public static byte[] readFile2Bytes(File file) {
-        if (file == null) return null;
+        if (file == null) {
+            return null;
+        }
         try {
-            return RxDataUtils.inputStream2Bytes(new FileInputStream(file));
+            return RxDataTool.inputStream2Bytes(new FileInputStream(file));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return null;
@@ -1607,7 +1700,9 @@ public class RxFileUtils {
             int readChars;
             while ((readChars = is.read(buffer, 0, KB)) != -1) {
                 for (int i = 0; i < readChars; ++i) {
-                    if (buffer[i] == '\n') ++count;
+                    if (buffer[i] == '\n') {
+                        ++count;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -1630,14 +1725,16 @@ public class RxFileUtils {
 
     /**
      * 获取文件大小
-     * <p>例如：getFileSize(file, RxConstUtils.MB); 返回文件大小单位为MB</p>
+     * <p>例如：getFileSize(file, RxConstTool.MB); 返回文件大小单位为MB</p>
      *
      * @param file 文件
      * @return 文件大小
      */
     public static String getFileSize(File file) {
-        if (!isFileExists(file)) return "";
-        return RxDataUtils.byte2FitSize(file.length());
+        if (!isFileExists(file)) {
+            return "";
+        }
+        return RxDataTool.byte2FitSize(file.length());
     }
 
     /**
@@ -1657,7 +1754,7 @@ public class RxFileUtils {
      * @return 文件的MD5校验码
      */
     public static String getFileMD5(File file) {
-        return RxEncryptUtils.encryptMD5File2String(file);
+        return RxEncryptTool.encryptMD5File2String(file);
     }
 
     /**
@@ -1666,7 +1763,9 @@ public class RxFileUtils {
      * @param closeables closeable
      */
     public static void closeIO(Closeable... closeables) {
-        if (closeables == null) return;
+        if (closeables == null) {
+            return;
+        }
         try {
             for (Closeable closeable : closeables) {
                 if (closeable != null) {
@@ -1685,7 +1784,9 @@ public class RxFileUtils {
      * @return filePath最长目录
      */
     public static String getDirName(File file) {
-        if (file == null) return null;
+        if (file == null) {
+            return null;
+        }
         return getDirName(file.getPath());
     }
 
@@ -1696,7 +1797,9 @@ public class RxFileUtils {
      * @return filePath最长目录
      */
     public static String getDirName(String filePath) {
-        if (RxDataUtils.isNullString(filePath)) return filePath;
+        if (RxDataTool.isNullString(filePath)) {
+            return filePath;
+        }
         int lastSep = filePath.lastIndexOf(File.separator);
         return lastSep == -1 ? "" : filePath.substring(0, lastSep + 1);
     }
@@ -1708,7 +1811,9 @@ public class RxFileUtils {
      * @return 文件名
      */
     public static String getFileName(File file) {
-        if (file == null) return null;
+        if (file == null) {
+            return null;
+        }
         return getFileName(file.getPath());
     }
 
@@ -1719,7 +1824,9 @@ public class RxFileUtils {
      * @return 文件名
      */
     public static String getFileName(String filePath) {
-        if (RxDataUtils.isNullString(filePath)) return filePath;
+        if (RxDataTool.isNullString(filePath)) {
+            return filePath;
+        }
         int lastSep = filePath.lastIndexOf(File.separator);
         return lastSep == -1 ? filePath : filePath.substring(lastSep + 1);
     }
@@ -1731,7 +1838,9 @@ public class RxFileUtils {
      * @return 不带拓展名的文件名
      */
     public static String getFileNameNoExtension(File file) {
-        if (file == null) return null;
+        if (file == null) {
+            return null;
+        }
         return getFileNameNoExtension(file.getPath());
     }
 
@@ -1742,7 +1851,9 @@ public class RxFileUtils {
      * @return 不带拓展名的文件名
      */
     public static String getFileNameNoExtension(String filePath) {
-        if (RxDataUtils.isNullString(filePath)) return filePath;
+        if (RxDataTool.isNullString(filePath)) {
+            return filePath;
+        }
         int lastPoi = filePath.lastIndexOf('.');
         int lastSep = filePath.lastIndexOf(File.separator);
         if (lastSep == -1) {
@@ -1761,7 +1872,9 @@ public class RxFileUtils {
      * @return 文件拓展名
      */
     public static String getFileExtension(File file) {
-        if (file == null) return null;
+        if (file == null) {
+            return null;
+        }
         return getFileExtension(file.getPath());
     }
 
@@ -1772,21 +1885,42 @@ public class RxFileUtils {
      * @return 文件拓展名
      */
     public static String getFileExtension(String filePath) {
-        if (RxDataUtils.isNullString(filePath)) return filePath;
+        if (RxDataTool.isNullString(filePath)) {
+            return filePath;
+        }
         int lastPoi = filePath.lastIndexOf('.');
         int lastSep = filePath.lastIndexOf(File.separator);
-        if (lastPoi == -1 || lastSep >= lastPoi) return "";
+        if (lastPoi == -1 || lastSep >= lastPoi) {
+            return "";
+        }
         return filePath.substring(lastPoi);
     }
 
     /**
-     * 将文件转换成uri
+     * 将文件转换成uri(支持7.0)
+     *
+     * @param mContext
+     * @param file
+     * @return
+     */
+    public static Uri getUriForFile(Context mContext, File file) {
+        Uri fileUri = null;
+        if (Build.VERSION.SDK_INT >= 24) {
+            fileUri = FileProvider.getUriForFile(mContext, mContext.getPackageName() + ".fileprovider", file);
+        } else {
+            fileUri = Uri.fromFile(file);
+        }
+        return fileUri;
+    }
+
+    /**
+     * 将图片文件转换成uri
      *
      * @param context
      * @param imageFile
      * @return
      */
-    public static Uri getImageContentUri(Context context, File imageFile) {
+    public static Uri getImageContentUri(Context context, java.io.File imageFile) {
         String filePath = imageFile.getAbsolutePath();
         Cursor cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=? ",
@@ -1813,8 +1947,8 @@ public class RxFileUtils {
 //     * @param uri
 //     * @return
 //     */
-//    public static File getFileFromUri(Activity context, Uri uri) {
-//        return new File(RxPhotoUtils.getImageAbsolutePath(context, uri));
+//    public static File getFilePhotoFromUri(Activity context, Uri uri) {
+//        return new File(RxPhotoTool.getImageAbsolutePath(context, uri));
 //    }
 
     @TargetApi(19)
@@ -1870,8 +2004,9 @@ public class RxFileUtils {
         // MediaStore (and general)
         else if ("content".equalsIgnoreCase(uri.getScheme())) {
             // Return the remote address
-            if (isGooglePhotosUri(uri))
+            if (isGooglePhotosUri(uri)) {
                 return uri.getLastPathSegment();
+            }
 
             return getDataColumn(context, uri, null, null);
         }
@@ -1926,8 +2061,9 @@ public class RxFileUtils {
                 return cursor.getString(index);
             }
         } finally {
-            if (cursor != null)
+            if (cursor != null) {
                 cursor.close();
+            }
         }
         return null;
     }
@@ -1938,7 +2074,9 @@ public class RxFileUtils {
      * @param closeables closeable
      */
     public static void closeIOQuietly(Closeable... closeables) {
-        if (closeables == null) return;
+        if (closeables == null) {
+            return;
+        }
         for (Closeable closeable : closeables) {
             if (closeable != null) {
                 try {
@@ -1947,6 +2085,26 @@ public class RxFileUtils {
                 }
             }
         }
+    }
+
+    public static String file2Base64(String filePath) {
+        FileInputStream fis = null;
+        String base64String = "";
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            fis = new FileInputStream(filePath);
+            byte[] buffer = new byte[1024 * 100];
+            int count = 0;
+            while ((count = fis.read(buffer)) != -1) {
+                bos.write(buffer, 0, count);
+            }
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        base64String = Base64.encodeToString(bos.toByteArray(), Base64.DEFAULT);
+        return base64String;
+
     }
 
     /**
@@ -2008,7 +2166,34 @@ public class RxFileUtils {
             }
         }
     }
+
+
+    public static void exportDb2Sdcard(Context context, String path,String realDBName, String exportDBName) {
+        String filePath = context.getDatabasePath(realDBName).getAbsolutePath();
+        byte[] buffer = new byte[1024];
+
+        try {
+            FileInputStream input = new FileInputStream(new File(filePath));
+            FileOutputStream output = new FileOutputStream(path + File.separator + exportDBName);
+
+            int length;
+            while ((length = input.read(buffer)) > 0) {
+                output.write(buffer, 0, length);
+            }
+
+            output.flush();
+            output.close();
+            input.close();
+            Log.i("TAG", "mv success!");
+        } catch (IOException var8) {
+            Log.e("TAG", var8.toString());
+        }
+
+    }
+
 }
+
+
 
 
 //----------------------------------------m3u8 ts 操作----------------------------------------------
@@ -2040,7 +2225,7 @@ public class RxFileUtils {
 //                        if (dataList.size() == fileList.size()) {
 //                            //FileUtil.mergeFiles(context, new File(FileUtil.getDiskFileDir(context) + File.separator + title, title + "_" + duration + ".mp4"), fileList);
 ////                            Log.d("ts下载", "下载完成");
-///*                            RxUtils.ShowToast(context, "视频文件缓存成功，开始合并视频文件...", false);*/
+///*                            RxTool.ShowToast(context, "视频文件缓存成功，开始合并视频文件...", false);*/
 //                            getNativeM3u(context, m3u8File, fileList);
 //                        } else {
 //                            getFile(context, dataList.get(i + 1).getUri(), title, i + 1, dataList, fileList, duration, m3u8File);
@@ -2110,13 +2295,13 @@ public class RxFileUtils {
 //                .execute(new FileCallBack(FileUtil.getDiskFileDir(context), videoParse1.getTitle() + "%" + vid + "%" + duration + "%m3u8") {
 //                    @Override
 //                    public void onError(Call call, Exception e, int id) {
-//                        RxUtils.ShowToast(context, "下载文件清单缓冲失败...", 500);
+//                        RxTool.ShowToast(context, "下载文件清单缓冲失败...", 500);
 //                    }
 //
 //                    @Override
 //                    public void onBefore(Request request, int id) {
 //                        super.onBefore(request, id);
-//                        RxUtils.ShowToast(context, "开始缓存...", 500);
+//                        RxTool.ShowToast(context, "开始缓存...", 500);
 //                    }
 //
 //                    @Override
@@ -2132,7 +2317,7 @@ public class RxFileUtils {
 ////                              float duration = dataList.get(j).getTrackInfo().duration;//时长
 //                                downList.add(dataList.get(0).getUri());
 //                            }
-//                            RxUtils.ShowToast(context, "缓冲清单成功，开始缓存视频文件...", 500);
+//                            RxTool.ShowToast(context, "缓冲清单成功，开始缓存视频文件...", 500);
 //                            FileUtil.getFile(context, dataList.get(0).getUri(), vid, 0, dataList, new ArrayList<File>(), duration, response);
 //                        } catch (FileNotFoundException e) {
 //                            e.printStackTrace();
