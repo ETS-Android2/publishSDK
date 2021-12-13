@@ -15,10 +15,6 @@ public class AppApplication extends Application {
     public void onCreate() {
         super.onCreate();
         AzimuthIndoorSDK.getInstance().init(this, new AzimuthIndoorConfig.Builder().DEAFULT(this).build(), new IAzimuthNaviManager.IInitSDKListener() {
-            @Override
-            public void onAuthResult(int code, String message) {
-                Log.d(TAG,"onAuthResult code:"+code);
-            }
 
             @Override
             public void initStart() {
@@ -26,13 +22,13 @@ public class AppApplication extends Application {
             }
 
             @Override
-            public void initSuccess() {
+            public void initSuccess(String code) {
 
             }
 
             @Override
-            public void initFailed(int code, String message) {
-                Log.d(TAG,"initFailed code:"+code+";message is "+message);
+            public void initFailed(String message) {
+                Log.d(TAG,"initFailed;message is "+message);
             }
         });
     }

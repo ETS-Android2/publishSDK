@@ -1,9 +1,5 @@
 package com.indoor.data;
 
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 
 import com.indoor.AzimuthIndoorStrategy;
@@ -17,19 +13,16 @@ import com.indoor.data.http.HttpDataSource;
 import com.indoor.data.http.HttpDataSourceImpl;
 import com.indoor.data.http.HttpStatus;
 import com.indoor.data.http.ResponseThrowable;
+import com.indoor.data.http.ResultCodeUtils;
 import com.indoor.data.http.download.ProgressCallBack;
 import com.indoor.data.local.LocalDataSource;
 import com.indoor.data.local.LocalDataSourceImpl;
 import com.indoor.data.local.db.UserActionData;
 import com.indoor.utils.KLog;
-import com.indoor.utils.RxAppUtils;
-import com.indoor.utils.RxFileUtils;
 import com.indoor.utils.RxUtils;
-import com.indoor.utils.Utils;
 
 import java.util.List;
 
-import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
@@ -47,6 +40,8 @@ public class SDKRepository {
     private final LocalDataSource mLocalDataSource;
 
     private volatile static CompositeDisposable mCompositeDisposable;
+
+    private AuthorData mAuthorData;
 
     private SDKRepository(@NonNull HttpDataSource httpDataSource,
                           @NonNull LocalDataSource localDataSource) {
@@ -113,7 +108,7 @@ public class SDKRepository {
     /**
      * 提交日志信息
      */
-    public void submitDefineLogRecord() {
+    public void submitDefineLogRecord(boolean shouldRetry) {
 
 //        UserActionData userActionData=new UserActionData();
 //        userActionData.machineManu="";
@@ -139,21 +134,38 @@ public class SDKRepository {
                 .subscribe(new Consumer<BaseResponse<String>>() {
                     @Override
                     public void accept(BaseResponse<String> entity) throws Exception {
-                        KLog.e(TAG, "submitLogRecord result is " + entity.getResult());
-                        if (entity.getResultCode() == HttpStatus.STATUS_CODE_SUCESS) {
+                        KLog.e(TAG, "submitLogRecord result is " + entity.getResultMsg());
+                        if (ResultCodeUtils.isRequestOptionSuccess(entity.getResultCode())) {
                             KLog.d(TAG, "submit sucess...size is " + userActionDatas.size() + "; first recoredId is " + userActionDatas.get(0).recoredId);
                             synchronized (SDKRepository.INSTANCE) {
                                 if (mLocalDataSource.getLimitUserActionDataToDB().size() > 0) {
                                     mLocalDataSource.deleteUserActionDataToDB(userActionDatas);
-                                    submitDefineLogRecord();
+                                    submitDefineLogRecord(true);
                                 } else {
                                     KLog.d(TAG, "nothing to submit...");
                                 }
 
                             }
-                        } else if (HttpStatus.isTokenErr(entity.getResultCode())) {
+                        } else if (shouldRetry && ResultCodeUtils.isTokenErr(entity.getResultCode())) {
                             //TODOhandle token error
-                            KLog.e(TAG, "submit failed,statusCode is "+entity.getResultCode());
+                            KLog.e(TAG, "submit failed,token error,statusCode is " + entity.getResultCode());
+                            KLog.e(TAG, "refreshAreaConfig Error:" + ResultCodeUtils.getHttpResultMsg(entity.getResultCode()));
+                            verrifySDK(getAuthorData(), new IAzimuthNaviManager.IInitSDKListener() {
+                                @Override
+                                public void initStart() {
+
+                                }
+
+                                @Override
+                                public void initSuccess(String code) {
+                                    submitDefineLogRecord(false);
+                                }
+
+                                @Override
+                                public void initFailed(String message) {
+
+                                }
+                            });
                         } else {
                             KLog.e(TAG, "statusCode is other condition...");
                         }
@@ -179,7 +191,7 @@ public class SDKRepository {
     /**
      * save 用户数据
      */
-    void saveUserActionDataToDB(UserActionData... userActionData){
+    void saveUserActionDataToDB(UserActionData... userActionData) {
         mLocalDataSource.saveUserActionDataToDB(userActionData);
     }
 
@@ -189,7 +201,11 @@ public class SDKRepository {
      * @param authorData
      * @return
      */
-    public boolean verrifySDK(AuthorData authorData, IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
+    public boolean verrifySDK(AuthorData authorData,  IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
+        if (authorData == null) {
+            KLog.e(TAG, "authorData cannot be null ... ");
+            return false;
+        }
         final boolean[] result = {false};
         iInitSDKListener.initStart();
         addSubscribe(mHttpDataSource.verifyAuth(authorData).compose(RxUtils.schedulersTransformer()) //线程调度
@@ -199,26 +215,26 @@ public class SDKRepository {
                 .subscribe(new Consumer<BaseResponse<String>>() {
                     @Override
                     public void accept(BaseResponse<String> entity) throws Exception {
-                        KLog.e(TAG, "submitLogRecord result is " + entity.getResult());
-                        int code = entity.getResultCode();
-                        if (code == HttpStatus.STATUS_CODE_SUCESS) {
-                            String token = entity.getResult();
-                            KLog.e(TAG, "token is :" + token);
-                            mLocalDataSource.saveToken(token);
-                            submitDefineLogRecord();
-                            iInitSDKListener.initSuccess();
-                            result[0] = true;
+                        KLog.e(TAG, "verrifySDK result is " + entity.getResultMsg());
+                        if (ResultCodeUtils.isAuthorErr(entity.getResultCode())) {
+                            iInitSDKListener.initFailed(entity.getResultMsg());
+                            KLog.e(TAG, "handle Error:" + entity.getResultMsg());
                         } else {
-                            //TODOhandle token error
-                            iInitSDKListener.initFailed(code, entity.getResultMsg());
-                            KLog.e(TAG, "handle Error:" + ExceptionHandle.getHttpExceptionMsg(code));
+                            if (ResultCodeUtils.isRequestOptionSuccess(entity.getResultCode())) {
+                                String token = entity.getResult();
+                                KLog.e(TAG, "token is :" + token);
+                                mLocalDataSource.saveToken(token);
+                                submitDefineLogRecord(true);
+                                result[0] = true;
+                            }
+                            iInitSDKListener.initSuccess(entity.getResultCode());
                         }
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
                         ResponseThrowable e = ExceptionHandle.handleException(throwable);
-                        iInitSDKListener.initFailed(e.code, e.message);
+                        iInitSDKListener.initSuccess(ResultCodeUtils.RESULTCODE.EXCEPTION_ERROR);
                         KLog.e(TAG + " accept error :", e.message);
                     }
                 }, new Action() {
@@ -230,7 +246,15 @@ public class SDKRepository {
         return result[0];
     }
 
-    public void refreshAreaConfig(ProjectAreaData projectAreaData) {
+    public void setAuthorData(AuthorData authorData) {
+        this.mAuthorData = authorData;
+    }
+
+    public AuthorData getAuthorData() {
+        return this.mAuthorData;
+    }
+
+    public void refreshAreaConfig(ProjectAreaData projectAreaData, boolean shouldRetry) {
         addSubscribe(mHttpDataSource.getProjectAreaData(projectAreaData).compose(RxUtils.schedulersTransformer()) //线程调度
                 .doOnSubscribe((Consumer<Disposable>) disposable -> {
                     KLog.e(TAG, "doOnSubscribe ... ");
@@ -238,9 +262,8 @@ public class SDKRepository {
                 .subscribe(new Consumer<BaseResponse<String>>() {
                     @Override
                     public void accept(BaseResponse<String> entity) throws Exception {
-                        KLog.e(TAG, "submitLogRecord result is " + entity.getResult());
-                        int code = entity.getResultCode();
-                        if (code == HttpStatus.STATUS_CODE_SUCESS) {
+                        KLog.e(TAG, "refreshAreaConfig result is " + entity.getResult());
+                        if (entity.isOk()) {
                             String token = entity.getResult();
                             KLog.e(TAG, "token is :" + token);
                             //TODO 下载配置文件
@@ -264,7 +287,26 @@ public class SDKRepository {
                             });
                         } else {
                             //TODOhandle token error
-                            KLog.e(TAG, "handle Error:" + ExceptionHandle.getHttpExceptionMsg(code));
+                            KLog.e(TAG, "refreshAreaConfig Error:" + ResultCodeUtils.getHttpResultMsg(entity.getResultCode()));
+                            if (shouldRetry && ResultCodeUtils.isTokenErr(entity.getResultCode())) {
+                                verrifySDK(getAuthorData(),  new IAzimuthNaviManager.IInitSDKListener() {
+                                    @Override
+                                    public void initStart() {
+
+                                    }
+
+                                    @Override
+                                    public void initSuccess(String code) {
+                                        refreshAreaConfig(projectAreaData, false);
+                                    }
+
+                                    @Override
+                                    public void initFailed(String message) {
+
+                                    }
+                                });
+                            }
+
                         }
                     }
                 }, new Consumer<Throwable>() {

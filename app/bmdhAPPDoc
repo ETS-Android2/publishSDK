@@ -1,0 +1,37 @@
+C:\Program Files\Android\Android Studio\jre\bin>keytool.exe -list -v -keystore D:\BMDH\project\coding\BmdhSdkGenerate\bmdhtest.jks
+输入密钥库口令:
+密钥库类型: PKCS12
+密钥库提供方: SUN
+
+您的密钥库包含 1 个条目
+
+别名: bmdhtest
+创建日期: 2021年12月13日
+条目类型: PrivateKeyEntry
+证书链长度: 1
+证书[1]:
+所有者: CN=fwj
+发布者: CN=fwj
+序列号: 610f1fce
+生效时间: Mon Dec 13 15:56:23 CST 2021, 失效时间: Wed Dec 06 15:56:23 CST 2051
+证书指纹:
+         SHA1: B8:18:2D:43:84:83:83:B5:E0:20:A6:D5:A1:CA:20:53:74:AA:E3:0B
+         SHA256: D1:5D:06:BC:E0:CB:2D:9B:AF:3A:3C:31:7A:B8:F2:C7:42:E8:EA:1A:99:28:97:C2:48:BE:32:C8:A9:3E:A4:6B
+签名算法名称: SHA256withRSA
+主体公共密钥算法: 2048 位 RSA 密钥
+版本: 3
+
+扩展:
+
+#1: ObjectId: 2.5.29.14 Criticality=false
+SubjectKeyIdentifier [
+KeyIdentifier [
+0000: F4 BF 3D 94 98 19 BB BF   D9 92 E5 43 EB D1 EB 57  ..=........C...W
+0010: DA 15 B4 BA                                        ....
+]
+]
+
+
+
+*******************************************
+*******************************************

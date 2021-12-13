@@ -13,13 +13,10 @@ public interface IAzimuthNaviManager {
     }
     @Keep
     public interface IInitSDKListener{
-        void onAuthResult(int code, String message);
-
         void initStart();
 
-        void initSuccess();
+        void initSuccess(String code);
 
-        void initFailed(int code, String message);
+        void initFailed(String message);
     }
-
 }
