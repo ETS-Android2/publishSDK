@@ -19,4 +19,11 @@ public interface IAzimuthNaviManager {
 
         void initFailed(String message);
     }
+
+    @Keep
+    interface IUpdateAreaConfigListener{
+        void updateSuccess();
+        void updateError(Throwable e);
+        void updateFailed(String msg);
+    }
 }

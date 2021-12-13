@@ -254,7 +254,7 @@ public class SDKRepository {
         return this.mAuthorData;
     }
 
-    public void refreshAreaConfig(ProjectAreaData projectAreaData, boolean shouldRetry) {
+    public void refreshAreaConfig(ProjectAreaData projectAreaData, IAzimuthNaviManager.IUpdateAreaConfigListener iUpdateAreaConfigListener, boolean shouldRetry) {
         addSubscribe(mHttpDataSource.getProjectAreaData(projectAreaData).compose(RxUtils.schedulersTransformer()) //线程调度
                 .doOnSubscribe((Consumer<Disposable>) disposable -> {
                     KLog.e(TAG, "doOnSubscribe ... ");
@@ -273,6 +273,9 @@ public class SDKRepository {
                                 @Override
                                 public void onSuccess(Object o) {
                                     KLog.d(TAG, "load config sucess...");
+                                    if(iUpdateAreaConfigListener!=null){
+                                        iUpdateAreaConfigListener.updateSuccess();
+                                    }
                                 }
 
                                 @Override
@@ -283,10 +286,13 @@ public class SDKRepository {
                                 @Override
                                 public void onError(Throwable e) {
                                     KLog.d(TAG, "load config error:" + e.getMessage());
+                                    if(iUpdateAreaConfigListener!=null){
+                                        iUpdateAreaConfigListener.updateError(e);
+                                    }
                                 }
                             });
                         } else {
-                            //TODOhandle token error
+                            //TODO handle token error
                             KLog.e(TAG, "refreshAreaConfig Error:" + ResultCodeUtils.getHttpResultMsg(entity.getResultCode()));
                             if (shouldRetry && ResultCodeUtils.isTokenErr(entity.getResultCode())) {
                                 verrifySDK(getAuthorData(),  new IAzimuthNaviManager.IInitSDKListener() {
@@ -297,7 +303,7 @@ public class SDKRepository {
 
                                     @Override
                                     public void initSuccess(String code) {
-                                        refreshAreaConfig(projectAreaData, false);
+                                        refreshAreaConfig(projectAreaData, iUpdateAreaConfigListener,false);
                                     }
 
                                     @Override
@@ -305,6 +311,10 @@ public class SDKRepository {
 
                                     }
                                 });
+                            }else{
+                                if(iUpdateAreaConfigListener!=null){
+                                    iUpdateAreaConfigListener.updateFailed(entity.getResultMsg());
+                                }
                             }
 
                         }
@@ -314,6 +324,9 @@ public class SDKRepository {
                     public void accept(Throwable throwable) throws Exception {
                         ResponseThrowable e = ExceptionHandle.handleException(throwable);
                         KLog.e(TAG + " accept error :", e.message);
+                        if(iUpdateAreaConfigListener!=null){
+                            iUpdateAreaConfigListener.updateError(e);
+                        }
                     }
                 }, new Action() {
                     @Override
