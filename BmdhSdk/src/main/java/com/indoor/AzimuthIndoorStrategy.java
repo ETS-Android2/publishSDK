@@ -28,13 +28,18 @@ import com.indoor.utils.RxEncryptTool;
 import com.indoor.utils.RxFileUtils;
 import com.indoor.utils.Utils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AzimuthIndoorStrategy {
     private static final String TAG = "BmdhIndoorStrategy";
 
+    private static final boolean IS_NEED_SCRIPT=true;
     private static final String FOLDER_NAME_MAPDATA = "mapconfig";
     private static final String SALT = "shanghai-azimuth-data-Technology-Company-Limited-@-api-key-salt-001-*";
 
@@ -47,6 +52,7 @@ public class AzimuthIndoorStrategy {
     private volatile boolean isOffLine = true;
     private IPSMeasurement.Callback mCallback;
     private MapConfig mapConfig;
+    private MapConfigNet mapConfigNet;
     private String currentMapConfigID = "";
     private String currentSetMapID = "";
     private MapConfig.DataConfigDTO mCurrentConfig;
@@ -179,6 +185,74 @@ public class AzimuthIndoorStrategy {
         return result;
     }
 
+    public MapConfigNet getMapConfigNet(Context context, String areaId) {
+        MapConfigNet result = null;
+        if (TextUtils.isEmpty(areaId) || areaId.length() < 6) {
+            KLog.e(TAG, "getMapConfig failed,TextUtils.isEmpty(areaId)||areaId.length()<6...");
+            return null;
+        }
+        if (context == null) {
+            KLog.e(TAG, "getMapConfig failed,you should init SDK first...");
+            return null;
+        }
+        try {
+            String areaFilePath = MAPCONFIG_FOLDER_PATH + File.separator + getAreaCode(areaId);
+            if (!RxFileUtils.isFileExists(areaFilePath)) {
+                InputStream in = context.getResources().getAssets().open(getAreaCode(areaId));
+                if (in == null) {
+                    KLog.e(TAG, "getMapConfig failed,no such asset file:" + CONFIG_ASSET_NAME);
+                    return null;
+                }
+                RxFileUtils.copyFile(in, new File(areaFilePath));
+            }
+
+            return readMapConfigNet(areaFilePath,areaId);
+        } catch (Exception e) {
+            KLog.e(TAG, e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * 以行为单位读取文件，常用于读面向行的格式化文件
+     */
+    public MapConfigNet readMapConfigNet(String fileName,String areaId) {
+        MapConfigNet result =null;
+        File file = new File(fileName);
+        BufferedReader reader = null;
+        Gson gson = new Gson();
+        try {
+            System.out.println("以行为单位读取文件内容，一次读一整行：");
+            reader = new BufferedReader(new FileReader(file));
+            String tempString = null;
+            int line = 1;
+            // 一次读入一行，直到读入null为文件结束
+            while ((tempString = reader.readLine()) != null) {
+                // 显示行号
+                System.out.println("line?????????????????????????????????? " + line + ": " + tempString);
+                String jsonStr = tempString;
+                MapConfigNet temp = gson.fromJson(jsonStr, MapConfigNet.class);
+                if(temp!=null&&temp.getProjectAreaId().equals(areaId)){
+                    result=temp;
+                    break;
+                }
+                line++;
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e1) {
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * 销毁当前SDK资源
      */
@@ -218,6 +292,7 @@ public class AzimuthIndoorStrategy {
 
     private void initAreaConfig(String areaId,IPSMeasurement.Callback callback) {
         mapConfig = getMapConfig(mContext, getAreaCode(areaId));
+        mapConfigNet = getMapConfigNet(mContext, "14692570469007237141639133152124440307");//For Net Test,I will use it later
         if (mapConfig == null) {
             KLog.e(TAG, "MapConfig is null,please ensure that the SDK is operating properly according to the steps");
             return;
