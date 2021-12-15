@@ -1,7 +1,5 @@
 package com.indoor;
 
-import android.location.Location;
-
 import androidx.annotation.Keep;
 
 import com.google.gson.Gson;
@@ -9,10 +7,7 @@ import com.google.gson.annotations.SerializedName;
 import com.indoor.data.SDKRepository;
 import com.indoor.utils.KLog;
 import com.indoor.utils.RxEncryptTool;
-
-import java.math.BigDecimal;
 import java.util.List;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
