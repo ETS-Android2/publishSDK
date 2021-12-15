@@ -18,7 +18,6 @@ import com.indoor.data.DataInjection;
 import com.indoor.data.SDKRepository;
 import com.indoor.data.entity.author.AuthorData;
 import com.indoor.data.entity.projectareo.ProjectAreaData;
-import com.indoor.data.http.HttpStatus;
 import com.indoor.data.http.NetworkUtil;
 import com.indoor.data.http.ResultCodeUtils;
 import com.indoor.position.IPSMeasurement;
@@ -33,7 +32,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AzimuthIndoorStrategy {
@@ -41,8 +40,6 @@ public class AzimuthIndoorStrategy {
 
     private static final boolean IS_NEED_SCRIPT=true;
     private static final String FOLDER_NAME_MAPDATA = "mapconfig";
-    private static final String SALT = "shanghai-azimuth-data-Technology-Company-Limited-@-api-key-salt-001-*";
-
     private static String MAPCONFIG_FOLDER_PATH;
     private static String CONFIG_ASSET_NAME = "440312";
     private Context mContext;
@@ -52,7 +49,7 @@ public class AzimuthIndoorStrategy {
     private volatile boolean isOffLine = true;
     private IPSMeasurement.Callback mCallback;
     private MapConfig mapConfig;
-    private MapConfigNet mapConfigNet;
+    private MapConfigData mapConfigNet;
     private String currentMapConfigID = "";
     private String currentSetMapID = "";
     private MapConfig.DataConfigDTO mCurrentConfig;
@@ -104,7 +101,7 @@ public class AzimuthIndoorStrategy {
             mVerifySucess = false;
             return;
         }
-        String apikey = RxEncryptTool.encryptMD5ToString(packageName + shaCode, SALT);
+        String apikey = RxEncryptTool.encryptMD5ToString(packageName + shaCode, sdkRepository.getSalt());
         KLog.d(TAG, "apikey is " + apikey);
         if (!key.equals(apikey)) {
             KLog.e(TAG, "apikey is Error");
@@ -112,11 +109,12 @@ public class AzimuthIndoorStrategy {
             mVerifySucess = false;
             return;
         }
-        String mw = "方位角数据科技有限公司Az#!";
-        String miw = RxEncryptTool.encrypt3DES2Base64(mw, SALT);
-        KLog.d(TAG, "miw is " + miw);
-        String desStr = RxEncryptTool.decryptBase64_3DES(miw, SALT);
-        KLog.d(TAG, "desStr is " + desStr);
+        sdkRepository.set3DesSalt();
+//        String mw = "方位角数据科技有限公司Az#!";
+//        String miw = RxEncryptTool.encrypt3DES2Base64(mw, SALT);
+//        KLog.d(TAG, "miw is " + miw);
+//        String desStr = RxEncryptTool.decryptBase64_3DES(miw, SALT);
+//        KLog.d(TAG, "desStr is " + desStr);
         if (!NetworkUtil.isNetworkAvailable(Utils.getContext())) {
             iInitSDKListener.initSuccess(ResultCodeUtils.RESULTCODE.SUCCESS);
             mVerifySucess = true;
@@ -185,8 +183,8 @@ public class AzimuthIndoorStrategy {
         return result;
     }
 
-    public MapConfigNet getMapConfigNet(Context context, String areaId) {
-        MapConfigNet result = null;
+    public MapConfigData getMapConfigDate(Context context, String areaId) {
+        MapConfigData result = null;
         if (TextUtils.isEmpty(areaId) || areaId.length() < 6) {
             KLog.e(TAG, "getMapConfig failed,TextUtils.isEmpty(areaId)||areaId.length()<6...");
             return null;
@@ -197,8 +195,31 @@ public class AzimuthIndoorStrategy {
         }
         try {
             String areaFilePath = MAPCONFIG_FOLDER_PATH + File.separator + getAreaCode(areaId);
-            if (!RxFileUtils.isFileExists(areaFilePath)) {
-                InputStream in = context.getResources().getAssets().open(getAreaCode(areaId));
+            String fileName="";
+            List<File>localFiles=RxFileUtils.listFilesInDir(MAPCONFIG_FOLDER_PATH);
+            boolean isHasLocalFile=false;
+            for(File file:localFiles){
+                if(file.getName().contains(getAreaCode(areaId))){
+                    isHasLocalFile=true;
+                    areaFilePath=file.getPath();
+                    fileName=file.getName();
+                    break;
+                }
+            }
+            if (!isHasLocalFile) {
+                List<String>assetFileNames=RxFileUtils.getAssertsFiles(Utils.getContext());
+                for(String name:assetFileNames){
+                    if(name.contains(getAreaCode(areaId))){
+                        areaFilePath = MAPCONFIG_FOLDER_PATH + File.separator + name;
+                        fileName=name;
+                        break;
+                    }
+                }
+                if(TextUtils.isEmpty(fileName)){
+                    KLog.e(TAG,"no config file fit to this app...");
+                    return null;
+                }
+                InputStream in = context.getResources().getAssets().open(fileName);
                 if (in == null) {
                     KLog.e(TAG, "getMapConfig failed,no such asset file:" + CONFIG_ASSET_NAME);
                     return null;
@@ -206,18 +227,19 @@ public class AzimuthIndoorStrategy {
                 RxFileUtils.copyFile(in, new File(areaFilePath));
             }
 
-            return readMapConfigNet(areaFilePath,areaId);
+            return readMapConfigData(areaFilePath,areaId);
         } catch (Exception e) {
             KLog.e(TAG, e.getMessage());
         }
         return result;
     }
 
+
     /**
      * 以行为单位读取文件，常用于读面向行的格式化文件
      */
-    public MapConfigNet readMapConfigNet(String fileName,String areaId) {
-        MapConfigNet result =null;
+    public MapConfigData readMapConfigData(String fileName, String areaId) {
+        MapConfigData result =null;
         File file = new File(fileName);
         BufferedReader reader = null;
         Gson gson = new Gson();
@@ -231,7 +253,7 @@ public class AzimuthIndoorStrategy {
                 // 显示行号
                 System.out.println("line?????????????????????????????????? " + line + ": " + tempString);
                 String jsonStr = tempString;
-                MapConfigNet temp = gson.fromJson(jsonStr, MapConfigNet.class);
+                MapConfigData temp = gson.fromJson(jsonStr, MapConfigData.class);
                 if(temp!=null&&temp.getProjectAreaId().equals(areaId)){
                     result=temp;
                     break;
@@ -292,7 +314,8 @@ public class AzimuthIndoorStrategy {
 
     private void initAreaConfig(String areaId,IPSMeasurement.Callback callback) {
         mapConfig = getMapConfig(mContext, getAreaCode(areaId));
-        mapConfigNet = getMapConfigNet(mContext, "14692570469007237141639133152124440307");//For Net Test,I will use it later
+        mapConfigNet = getMapConfigDate(mContext, "14710233974744268811639554282911310115");//For Net Test,I will use it later
+        mapConfigNet.getGmocratorFixcoordDecypt(sdkRepository.get3DesSalt());
         if (mapConfig == null) {
             KLog.e(TAG, "MapConfig is null,please ensure that the SDK is operating properly according to the steps");
             return;
@@ -419,6 +442,8 @@ public class AzimuthIndoorStrategy {
         }
         sdkRepository.refreshAreaConfig(new ProjectAreaData(areaId, dataConfig.getVersionNum()), iUpdateAreaConfigListener, true);
     }
+
+
 
     public static String getMapConfigPath() {
         return Utils.getContext().getExternalFilesDir(null) + File.separator + FOLDER_NAME_MAPDATA;

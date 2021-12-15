@@ -21,6 +21,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -51,6 +52,7 @@ import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
@@ -68,6 +70,28 @@ public class RxFileUtils {
 
     public static final int BUFSIZE = 1024 * 8;
     private static final String TAG = "RxFileUtils";
+
+
+    /**
+     * 列出Asserts文件夹下的所有文件
+     * @return asserts目录下的文件名列表
+     *
+     * */
+    public static List<String> getAssertsFiles(Context context ) throws IllegalArgumentException{
+        if( null == context ){
+            throw new IllegalArgumentException( "bad arguments!" );
+        }
+
+        AssetManager assetManager = context.getAssets();
+        String[] files = null;
+        try {
+            files = assetManager.list("");
+        } catch (IOException e) {
+            e.printStackTrace( );
+        }
+
+        return ( null == files )?null: Arrays.asList( files );
+    }
 
     /**
      * 得到SD卡根目录.

@@ -1,5 +1,7 @@
 package com.indoor;
 
+import android.location.Address;
+
 import androidx.annotation.Keep;
 
 import com.google.gson.annotations.SerializedName;
@@ -72,11 +74,11 @@ public class MapConfigNet {
         @SerializedName("svid")
         private Integer svid;
         @SerializedName("xxAxisCoordinate")
-        private Double xxAxisCoordinate;
+        private String xxAxisCoordinate;
         @SerializedName("yyAxisCoordinate")
-        private Double yyAxisCoordinate;
+        private String yyAxisCoordinate;
         @SerializedName("zzAxisCoordinate")
-        private Double zzAxisCoordinate;
+        private String zzAxisCoordinate;
     }
     @Keep
     @NoArgsConstructor
@@ -86,5 +88,15 @@ public class MapConfigNet {
         private String pseModeName;
         @SerializedName("spectrumList")
         private List<Integer> spectrumList;
+    }
+
+    public Double getXxAxisCoordinate(){
+        return 0d;
+    }
+    public Double getYyAxisCoordinate(){
+        return 0d;
+    }
+    public Double getZzAxisCoordinate(){
+        return 0d;
     }
 }

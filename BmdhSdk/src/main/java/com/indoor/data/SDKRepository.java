@@ -19,6 +19,7 @@ import com.indoor.data.local.LocalDataSource;
 import com.indoor.data.local.LocalDataSourceImpl;
 import com.indoor.data.local.db.UserActionData;
 import com.indoor.utils.KLog;
+import com.indoor.utils.RxEncryptTool;
 import com.indoor.utils.RxUtils;
 
 import java.util.List;
@@ -34,6 +35,7 @@ import io.reactivex.functions.Consumer;
  */
 public class SDKRepository {
     private static final String TAG = "HttpDataSourceImpl";
+    private static final String SALT = "shanghai-azimuth-data-Technology-Company-Limited-@-api-key-salt-001-*";
     private volatile static SDKRepository INSTANCE = null;
     private final HttpDataSource mHttpDataSource;
 
@@ -42,6 +44,7 @@ public class SDKRepository {
     private volatile static CompositeDisposable mCompositeDisposable;
 
     private AuthorData mAuthorData;
+    private String mDesSalt;
 
     private SDKRepository(@NonNull HttpDataSource httpDataSource,
                           @NonNull LocalDataSource localDataSource) {
@@ -85,6 +88,10 @@ public class SDKRepository {
         mCompositeDisposable.add(disposable);
     }
 
+    public static String getSalt(){
+        return SALT;
+    }
+
     public String getApiKey() {
         return mLocalDataSource.getApiKey();
     }
@@ -103,6 +110,26 @@ public class SDKRepository {
 
     public String getAreaId() {
         return mLocalDataSource.getAreaId();
+    }
+
+    /**
+     * 敏感数据加密盐值 = 包名后6位 + sha1第8位开始取16位 + apiKey后20位 + 盐值 第10位开始取18位  md5盐值加密
+     */
+    public String get3DesSalt() {
+        return mDesSalt;
+    }
+
+    /**
+     * 敏感数据加密盐值 = 包名后6位(小于6位取整个串) + sha1第8位开始取16位(小于16位取8位后的整个串) + apiKey后20位 + 盐值 第10位开始取18位  md5盐值加密
+     */
+    public void set3DesSalt(){
+        String packageNameSix=getPackageName().substring(Math.max(0,getPackageName().length()-6));
+        String sha1Sixteen=getShaCode().substring(8,Math.min(getShaCode().length()-8, 24));
+        String apikeyTwenty=getApiKey().substring(getApiKey().length()-20);
+        String saltEighteen=getSalt().substring(10,Math.min(getSalt().length()-10, 28));
+        String mSalt=packageNameSix+sha1Sixteen+apikeyTwenty+saltEighteen;
+        mDesSalt = RxEncryptTool.encryptMD5ToString(mSalt, getSalt());
+        KLog.e(TAG, "set3DesSalt,mSalt is "+mSalt+";mDesSalt is "+mDesSalt);
     }
 
     /**
