@@ -31,12 +31,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AzimuthIndoorStrategy {
     private static final String TAG = "BmdhIndoorStrategy";
 
+    private static final int MIN_FILENAME_LENGTH=8;
+    private static final int AREA_ID_LENGTH=38;//合法的区域id的长度
     private static final boolean IS_NEED_SCRIPT = true;
     private static final String FOLDER_NAME_MAPDATA = "mapconfig";
     private static String MAPCONFIG_FOLDER_PATH;
@@ -46,6 +49,7 @@ public class AzimuthIndoorStrategy {
     private volatile boolean mVerifySucess = true;
     private volatile boolean mIsIndoor = false;
     private volatile boolean isOffLine = true;
+    private volatile String mCureentSetAreaId="0";//当前接收到的区域ID
     private IPSMeasurement.Callback mCallback;
     private MapConfigData mapConfigNet;
     private SDKRepository mSdkRepository;
@@ -79,6 +83,20 @@ public class AzimuthIndoorStrategy {
         this.isOffLine = isOffLine;
     }
 
+    /**
+     * 判断区域ID是否合法
+     *
+     * @param areaId
+     * @return
+     */
+    public boolean isAreaIdLegal(String areaId) {
+        if(TextUtils.isEmpty(areaId)){
+            return false;
+        }
+        return areaId.length()==AREA_ID_LENGTH;
+    }
+
+
 
     public void setIndoorOrOutdoorChangedListener(IAzimuthNaviManager.INaviIndoorStateChangeListener listener) {
         iNaviIndoorStateChangeListener = listener;
@@ -105,11 +123,6 @@ public class AzimuthIndoorStrategy {
             return;
         }
         mSdkRepository.set3DesSalt();
-//        String mw = "方位角数据科技有限公司Az#!";
-//        String miw = RxEncryptTool.encrypt3DES2Base64(mw, SALT);
-//        KLog.d(TAG, "miw is " + miw);
-//        String desStr = RxEncryptTool.decryptBase64_3DES(miw, SALT);
-//        KLog.d(TAG, "desStr is " + desStr);
         if (!NetworkUtil.isNetworkAvailable(Utils.getContext())) {
             iInitSDKListener.initSuccess(ResultCodeUtils.RESULTCODE.SUCCESS);
             mVerifySucess = true;
@@ -149,8 +162,8 @@ public class AzimuthIndoorStrategy {
 
     public MapConfigData getMapConfigDate(Context context, String areaId) {
         MapConfigData result = null;
-        if (TextUtils.isEmpty(areaId) || areaId.length() < 6) {
-            KLog.e(TAG, "getMapConfig failed,TextUtils.isEmpty(areaId)||areaId.length()<6...");
+        if (TextUtils.isEmpty(areaId) || areaId.length() < MIN_FILENAME_LENGTH) {
+            KLog.e(TAG, "getMapConfig failed,TextUtils.isEmpty(areaId)||areaId.length()<8...");
             return null;
         }
         if (context == null) {
@@ -180,11 +193,37 @@ public class AzimuthIndoorStrategy {
         return result;
     }
 
+    /**
+     * 删掉非法的配置文件
+     *
+     * @param fileArray
+     */
+    private  List<File>  deleteIllegalLocalFiles( List<File> fileArray){
+        List<File> result=fileArray;
+        for(File file : fileArray){
+            if(isFileNameLegal(file.getName())){
+                RxFileUtils.deleteFile(file);
+                result.remove(file);
+            }
+        }
+       return result;
+    }
+
+    /**
+     * 配置文件名是否合法
+     *
+     * @param fileName
+     * @return
+     */
+    private boolean isFileNameLegal(String fileName) {
+        return !(TextUtils.isEmpty(getFileAreaCode(fileName)) || getFileAreaVersion(fileName) == 0);
+    }
+
     private void copyAndDeleteMapConfig(){
         List<File> localFiles = RxFileUtils.listFilesInDir(MAPCONFIG_FOLDER_PATH);
         List<String> assetFileNames = RxFileUtils.getAssertsFiles(Utils.getContext());
         for(String fileName:assetFileNames){
-            if(fileName.length()<8){
+            if(fileName.length()<MIN_FILENAME_LENGTH){
                 continue;
             }
              String  areaFilePath = MAPCONFIG_FOLDER_PATH + File.separator + fileName;
@@ -209,6 +248,11 @@ public class AzimuthIndoorStrategy {
         boolean result=false;
         List<File> localFiles = RxFileUtils.listFilesInDir(MAPCONFIG_FOLDER_PATH);
         for(File f:localFiles){
+            if(!isFileNameLegal(f.getName())){
+                KLog.e(TAG,"local file name is illegal,so delete...");
+                RxFileUtils.deleteFile(f);
+                continue;
+            }
             if(getFileAreaCode(f.getName()).equals(getFileAreaCode(compareFile.getName()))
                     &&getFileAreaVersion(f.getName())<getFileAreaVersion(compareFile.getName())){
                 RxFileUtils.deleteFile(f);
@@ -220,26 +264,50 @@ public class AzimuthIndoorStrategy {
     }
 
     private String getFileAreaCode(String fileName){
-        if (TextUtils.isEmpty(fileName)) {
+        if (TextUtils.isEmpty(fileName) || fileName.split("_").length != 2 || fileName.split("_")[0].length() != 6) {
             return "";
         }
         return fileName.split("_")[0];
     }
 
     private int getFileAreaVersion(String fileName){
-        if (TextUtils.isEmpty(fileName)|| fileName.split("_").length<2) {
+        if (TextUtils.isEmpty(fileName) || fileName.split("_").length != 2) {
             return 0;
         }
-        return Integer.parseInt(fileName.split("_")[1]);
+        int version=0;
+        try{
+            version=Integer.parseInt(fileName.split("_")[1]);
+        }catch (Exception e){
+            KLog.e(TAG,"getFileAreaVersion fileName is "+fileName+",Exception:"+e.getMessage());
+            return 0;
+        }
+        return version;
+
     }
 
     private File getAreaCodeLocalFile(String areaId){
         File result = null;
         List<File> localFiles = RxFileUtils.listFilesInDir(MAPCONFIG_FOLDER_PATH);
+        File tempFile = null;
         for (File file : localFiles) {
+            if(!isFileNameLegal(file.getName())){
+                KLog.e(TAG,"getAreaCodeLocalFile,local file name is illegal,so delete...");
+                RxFileUtils.deleteFile(file);
+                continue;
+            }
             if (file.getName().startsWith(getAreaCode(areaId))) {
-                result=file;
-                break;
+                if (tempFile == null) {
+                    tempFile = file;
+                    result = file;
+                } else {
+                    if (getFileAreaVersion(file.getName()) > getFileAreaVersion(tempFile.getName())) {
+                        result = file;
+                        tempFile.delete();
+                    } else {
+                        result = tempFile;
+                        file.delete();
+                    }
+                }
             }
         }
         return result;
@@ -323,24 +391,37 @@ public class AzimuthIndoorStrategy {
         }
     }
 
+    /**
+     * 更新当前AreaId对应的区域配置文件
+     *
+     */
+    public void refreshCurrentAreaConfig(){
+        if(!isAreaIdLegal(mCureentSetAreaId)){
+            KLog.e(TAG,"mCureentSetAreaId is illegal,no need to update...");
+            return;
+        }
+        refreshAreaConfig(mCureentSetAreaId, new IAzimuthNaviManager.IUpdateAreaConfigListener() {
+            @Override
+            public void updateSuccess() {
+                initAreaConfig(mCureentSetAreaId);
+            }
+
+            @Override
+            public void updateError(Throwable e) {
+            }
+
+            @Override
+            public void updateFailed(String msg) {
+            }
+        });
+    }
+
     private void updateMapConfig(String areaId, IndoorPositionService indoorPositionService) {
-        if (mapConfigNet == null || !mapConfigNet.getProjectAreaId().equals(areaId)) {
+        if (!mCureentSetAreaId.equals(areaId) ||mapConfigNet == null || !mapConfigNet.getProjectAreaId().equals(areaId)) {
             KLog.d(TAG,"updateMapConfig and refreshAreaConfig, need initAreaConfig,areaId is "+areaId);
+            mCureentSetAreaId = areaId;
             initAreaConfig(areaId);
-            refreshAreaConfig(areaId, new IAzimuthNaviManager.IUpdateAreaConfigListener() {
-                @Override
-                public void updateSuccess() {
-                    initAreaConfig(areaId);
-                }
-
-                @Override
-                public void updateError(Throwable e) {
-                }
-
-                @Override
-                public void updateFailed(String msg) {
-                }
-            });
+            refreshCurrentAreaConfig();
         }
         if (mapConfigNet == null) {
             KLog.e(TAG, "mapConfig==null,data err,Please make sure you have access to indoor map information...");
@@ -350,7 +431,7 @@ public class AzimuthIndoorStrategy {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             indoorPositionService.setInfoAndStartup(mapConfigNet, mSdkRepository);
         } else {
-            KLog.e(TAG, "currentVersion is too low, is " + Build.VERSION.SDK_INT);
+            KLog.e(TAG, "current OS Version is too low, is " + Build.VERSION.SDK_INT);
         }
     }
 
@@ -364,7 +445,7 @@ public class AzimuthIndoorStrategy {
             IndoorPositionService.LocalBinder binder = (IndoorPositionService.LocalBinder) service;
             IndoorPositionService indoorPositionService = binder.getService();
             AtomicInteger i = new AtomicInteger();
-            indoorPositionService.setInfoAndStartup(new MapConfigData(),AzimuthIndoorStrategy.this.mSdkRepository);
+            indoorPositionService.setInfoAndStartup(new MapConfigData(),AzimuthIndoorStrategy.this.mSdkRepository);//第一次调用启动定时器需要
             indoorPositionService.register(measurement -> {
                 i.getAndIncrement();
                 String text = "\n result" +
@@ -423,13 +504,7 @@ public class AzimuthIndoorStrategy {
             return;
         }
         //TODO
-        MapConfigData mapConfig = getMapConfigDate(mContext, areaId);
-        if (mapConfig == null) {
-            KLog.e(TAG, "refreshAreaConfig failed ,mapConfig is null,areaId is " + areaId);
-            return;
-        }
-
-        //TODO 更新区文件 getAreaCodeLocalFile(areaId).getName();
+        //TODO 更新区文件 getAreaCodeLocalFile(areaId).getName();  if(getAreaCodeLocalFile(areaId)==null){return getAareCode(areaId)}
         //mSdkRepository.refreshAreaConfig(new ProjectAreaData(areaId, mapConfig.getVersionNum()), iUpdateAreaConfigListener, true);
     }
 
