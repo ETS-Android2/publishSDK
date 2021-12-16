@@ -93,9 +93,9 @@ public class AzimuthIndoorSDK {
         mContext = context.getApplicationContext();
         KLog.init(true);
         Utils.init(context);
+        mAzimuthIndoorStrategy = new AzimuthIndoorStrategy(mContext);
         //TODO 配置文件检测更新
         mAzimuthIndoorConfig = azimuthIndoorConfig;
-        mAzimuthIndoorStrategy = new AzimuthIndoorStrategy(mContext);
         mAzimuthIndoorStrategy.verifySDK(iInitSDKListener);
     }
 
@@ -104,6 +104,13 @@ public class AzimuthIndoorSDK {
      */
     public void refreshAreaConfig(String areaId, IAzimuthNaviManager.IUpdateAreaConfigListener iUpdateAreaConfigListener) {
         mAzimuthIndoorStrategy.refreshAreaConfig(areaId, iUpdateAreaConfigListener);
+    }
+
+    /**
+     * 更新当前AreaId对应的区域配置文件
+     */
+    public void refreshCurrentAreaConfig(){
+        mAzimuthIndoorStrategy.refreshCurrentAreaConfig();
     }
 
     /**
