@@ -64,12 +64,12 @@ public class AzimuthIndoorSDK {
      *
      * @param callback 获取到位置信息后的回调，1s回调一次
      */
-    public void startIndoorLocation(String areaId, IPSMeasurement.Callback callback) {
+    public void startIndoorLocation(IPSMeasurement.Callback callback) {
         if (mAzimuthIndoorStrategy == null) {
             KLog.e(TAG, "mAzimuthIndoorStrategy is null");
             return;
         }
-        mAzimuthIndoorStrategy.startIndoorSdkLocate(areaId, callback);
+        mAzimuthIndoorStrategy.startIndoorSdkLocate(callback);
     }
 
 

@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 import com.indoor.data.DataInjection;
 import com.indoor.data.SDKRepository;
 import com.indoor.data.entity.author.AuthorData;
-import com.indoor.data.entity.projectareo.ProjectAreaData;
 import com.indoor.data.http.NetworkUtil;
 import com.indoor.data.http.ResultCodeUtils;
 import com.indoor.position.IPSMeasurement;
@@ -38,22 +37,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AzimuthIndoorStrategy {
     private static final String TAG = "BmdhIndoorStrategy";
 
-    private static final boolean IS_NEED_SCRIPT=true;
+    private static final boolean IS_NEED_SCRIPT = true;
     private static final String FOLDER_NAME_MAPDATA = "mapconfig";
     private static String MAPCONFIG_FOLDER_PATH;
-    private static String CONFIG_ASSET_NAME = "440312";
+//    private static String CONFIG_ASSET_NAME = "440312";
     private Context mContext;
     private volatile boolean mBound = false;
     private volatile boolean mVerifySucess = true;
     private volatile boolean mIsIndoor = false;
     private volatile boolean isOffLine = true;
     private IPSMeasurement.Callback mCallback;
-    private MapConfig mapConfig;
     private MapConfigData mapConfigNet;
-    private String currentMapConfigID = "";
-    private String currentSetMapID = "";
-    private MapConfig.DataConfigDTO mCurrentConfig;
-    private SDKRepository sdkRepository;
+    private SDKRepository mSdkRepository;
     private IPSMeasurement ipsMeasurement = null;
     private IAzimuthNaviManager.INaviIndoorStateChangeListener iNaviIndoorStateChangeListener = null;
 
@@ -61,7 +56,7 @@ public class AzimuthIndoorStrategy {
         mContext = context;
         MAPCONFIG_FOLDER_PATH = getMapConfigPath();
         RxFileUtils.createOrExistsDir(MAPCONFIG_FOLDER_PATH);
-        sdkRepository = DataInjection.provideDemoRepository(context);
+        mSdkRepository = DataInjection.provideDemoRepository(context);
     }
 
     public boolean ismBound() {
@@ -90,10 +85,10 @@ public class AzimuthIndoorStrategy {
     }
 
     public void verifySDK(IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
-        String key = sdkRepository.getApiKey();
+        String key = mSdkRepository.getApiKey();
         KLog.d(TAG, " APIkey == " + key);
-        String packageName = sdkRepository.getPackageName();
-        String shaCode = sdkRepository.getShaCode();
+        String packageName = mSdkRepository.getPackageName();
+        String shaCode = mSdkRepository.getShaCode();
         KLog.e(TAG, "shaCode is: " + shaCode);
         if (TextUtils.isEmpty(key) || TextUtils.isEmpty(packageName) || TextUtils.isEmpty(shaCode)) {
             KLog.e(TAG, "apikey or packageName or shaCode cannot be null");
@@ -101,7 +96,7 @@ public class AzimuthIndoorStrategy {
             mVerifySucess = false;
             return;
         }
-        String apikey = RxEncryptTool.encryptMD5ToString(packageName + shaCode, sdkRepository.getSalt());
+        String apikey = RxEncryptTool.encryptMD5ToString(packageName + shaCode, mSdkRepository.getSalt());
         KLog.d(TAG, "apikey is " + apikey);
         if (!key.equals(apikey)) {
             KLog.e(TAG, "apikey is Error");
@@ -109,7 +104,7 @@ public class AzimuthIndoorStrategy {
             mVerifySucess = false;
             return;
         }
-        sdkRepository.set3DesSalt();
+        mSdkRepository.set3DesSalt();
 //        String mw = "方位角数据科技有限公司Az#!";
 //        String miw = RxEncryptTool.encrypt3DES2Base64(mw, SALT);
 //        KLog.d(TAG, "miw is " + miw);
@@ -123,8 +118,8 @@ public class AzimuthIndoorStrategy {
             authorData.setPackageName(packageName);
             authorData.setShaCode(shaCode);
             authorData.setApiKey(key);
-            sdkRepository.setAuthorData(authorData);
-            sdkRepository.verrifySDK(authorData, new IAzimuthNaviManager.IInitSDKListener() {
+            mSdkRepository.setAuthorData(authorData);
+            mSdkRepository.verrifySDK(authorData, new IAzimuthNaviManager.IInitSDKListener() {
                 @Override
                 public void initStart() {
                     iInitSDKListener.initStart();
@@ -152,37 +147,6 @@ public class AzimuthIndoorStrategy {
 
     }
 
-    public MapConfig getMapConfig(Context context, String areaId) {
-        MapConfig result = null;
-        if (TextUtils.isEmpty(areaId) || areaId.length() < 6) {
-            KLog.e(TAG, "getMapConfig failed,TextUtils.isEmpty(areaId)||areaId.length()<6...");
-            return null;
-        }
-        String jsonStr = "";
-        Gson gson = new Gson();
-        if (context == null) {
-            KLog.e(TAG, "getMapConfig failed,you should init SDK first...");
-            return null;
-        }
-        try {
-            String areaFilePath = MAPCONFIG_FOLDER_PATH + File.separator + getAreaCode(areaId);
-            if (!RxFileUtils.isFileExists(areaFilePath)) {
-                InputStream in = context.getResources().getAssets().open(CONFIG_ASSET_NAME);
-                if (in == null) {
-                    KLog.e(TAG, "getMapConfig failed,no such asset file:" + CONFIG_ASSET_NAME);
-                    return null;
-                }
-                RxFileUtils.copyFile(in, new File(areaFilePath));
-            }
-            jsonStr = RxFileUtils.readFile2String(areaFilePath, "UTF-8");
-            result = gson.fromJson(jsonStr, MapConfig.class);
-            return result;
-        } catch (Exception e) {
-            KLog.e(TAG, e.getMessage());
-        }
-        return result;
-    }
-
     public MapConfigData getMapConfigDate(Context context, String areaId) {
         MapConfigData result = null;
         if (TextUtils.isEmpty(areaId) || areaId.length() < 6) {
@@ -194,42 +158,89 @@ public class AzimuthIndoorStrategy {
             return null;
         }
         try {
-            String areaFilePath = MAPCONFIG_FOLDER_PATH + File.separator + getAreaCode(areaId);
-            String fileName="";
-            List<File>localFiles=RxFileUtils.listFilesInDir(MAPCONFIG_FOLDER_PATH);
-            boolean isHasLocalFile=false;
-            for(File file:localFiles){
-                if(file.getName().contains(getAreaCode(areaId))){
-                    isHasLocalFile=true;
-                    areaFilePath=file.getPath();
-                    fileName=file.getName();
-                    break;
-                }
+            String areaFilePath = "";
+            String fileName = "";
+            copyAndDeleteMapConfig();
+            File fileAreaCode=getAreaCodeLocalFile(areaId);
+            boolean isHasLocalFile = false;
+            if(fileAreaCode!=null){
+                isHasLocalFile = true;
+                areaFilePath = fileAreaCode.getPath();
+                fileName = fileAreaCode.getName();
             }
-            if (!isHasLocalFile) {
-                List<String>assetFileNames=RxFileUtils.getAssertsFiles(Utils.getContext());
-                for(String name:assetFileNames){
-                    if(name.contains(getAreaCode(areaId))){
-                        areaFilePath = MAPCONFIG_FOLDER_PATH + File.separator + name;
-                        fileName=name;
-                        break;
-                    }
-                }
-                if(TextUtils.isEmpty(fileName)){
-                    KLog.e(TAG,"no config file fit to this app...");
-                    return null;
-                }
-                InputStream in = context.getResources().getAssets().open(fileName);
-                if (in == null) {
-                    KLog.e(TAG, "getMapConfig failed,no such asset file:" + CONFIG_ASSET_NAME);
-                    return null;
-                }
-                RxFileUtils.copyFile(in, new File(areaFilePath));
+            if(!isHasLocalFile){
+                KLog.e(TAG, "getMapConfig failed,no such config file:" + fileName);
+                return null;
             }
-
-            return readMapConfigData(areaFilePath,areaId);
+            result=readMapConfigData(areaFilePath, areaId);
+            return result;
         } catch (Exception e) {
             KLog.e(TAG, e.getMessage());
+        }
+        return result;
+    }
+
+    private void copyAndDeleteMapConfig(){
+        List<File> localFiles = RxFileUtils.listFilesInDir(MAPCONFIG_FOLDER_PATH);
+        List<String> assetFileNames = RxFileUtils.getAssertsFiles(Utils.getContext());
+        for(String fileName:assetFileNames){
+            if(fileName.length()<8){
+                continue;
+            }
+             String  areaFilePath = MAPCONFIG_FOLDER_PATH + File.separator + fileName;
+            if(localFiles==null||localFiles.size()==0|| isNeedCopyAreaCodeFile(new File(areaFilePath))){
+                InputStream in = null;
+                try {
+                    in = mContext.getResources().getAssets().open(fileName);
+                    RxFileUtils.copyFile(in, new File(areaFilePath));
+                } catch (IOException e) {
+//                    e.printStackTrace();
+                    if (in == null) {
+                        KLog.e(TAG, "getMapConfig failed,no such asset file:" + e.getMessage());
+                        return;
+                    }
+                }
+
+            }
+        }
+    }
+
+    private boolean isNeedCopyAreaCodeFile(File compareFile){
+        boolean result=false;
+        List<File> localFiles = RxFileUtils.listFilesInDir(MAPCONFIG_FOLDER_PATH);
+        for(File f:localFiles){
+            if(getFileAreaCode(f.getName()).equals(getFileAreaCode(compareFile.getName()))
+                    &&getFileAreaVersion(f.getName())<getFileAreaVersion(compareFile.getName())){
+                RxFileUtils.deleteFile(f);
+                result=true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private String getFileAreaCode(String fileName){
+        if (TextUtils.isEmpty(fileName)) {
+            return "";
+        }
+        return fileName.split("_")[0];
+    }
+
+    private int getFileAreaVersion(String fileName){
+        if (TextUtils.isEmpty(fileName)|| fileName.split("_").length<2) {
+            return 0;
+        }
+        return Integer.parseInt(fileName.split("_")[1]);
+    }
+
+    private File getAreaCodeLocalFile(String areaId){
+        File result = null;
+        List<File> localFiles = RxFileUtils.listFilesInDir(MAPCONFIG_FOLDER_PATH);
+        for (File file : localFiles) {
+            if (file.getName().startsWith(getAreaCode(areaId))) {
+                result=file;
+                break;
+            }
         }
         return result;
     }
@@ -238,9 +249,9 @@ public class AzimuthIndoorStrategy {
     /**
      * 以行为单位读取文件，常用于读面向行的格式化文件
      */
-    public MapConfigData readMapConfigData(String fileName, String areaId) {
-        MapConfigData result =null;
-        File file = new File(fileName);
+    public MapConfigData readMapConfigData(String filePath, String areaId) {
+        MapConfigData result = null;
+        File file = new File(filePath);
         BufferedReader reader = null;
         Gson gson = new Gson();
         try {
@@ -254,8 +265,8 @@ public class AzimuthIndoorStrategy {
                 System.out.println("line?????????????????????????????????? " + line + ": " + tempString);
                 String jsonStr = tempString;
                 MapConfigData temp = gson.fromJson(jsonStr, MapConfigData.class);
-                if(temp!=null&&temp.getProjectAreaId().equals(areaId)){
-                    result=temp;
+                if (temp != null && temp.getProjectAreaId().equals(areaId)) {
+                    result = temp;
                     break;
                 }
                 line++;
@@ -279,7 +290,11 @@ public class AzimuthIndoorStrategy {
      * 销毁当前SDK资源
      */
     public void clearData() {
-        sdkRepository.destroyInstance();
+        mSdkRepository.destroyInstance();
+    }
+
+    public void setAreaId(String areaId) {
+        initAreaConfig(areaId);
     }
 
     /**
@@ -287,69 +302,53 @@ public class AzimuthIndoorStrategy {
      *
      * @param callback
      */
-    public void startIndoorSdkLocate(String areaId, IPSMeasurement.Callback callback) {
+    public void startIndoorSdkLocate(IPSMeasurement.Callback callback) {
         if (!isAuthorSucess()) {
             Log.e(TAG, "verify failed,startIndoorSdkLocate failed...");
-            return;
-        }
-        currentSetMapID = areaId;
-        sdkRepository.saveAreaId(areaId);
-        initAreaConfig(areaId,callback);
-        refreshAreaConfig(areaId, new IAzimuthNaviManager.IUpdateAreaConfigListener() {
-            @Override
-            public void updateSuccess() {
-                initAreaConfig(areaId,callback);
-            }
-
-            @Override
-            public void updateError(Throwable e) {
-            }
-
-            @Override
-            public void updateFailed(String msg) {
-            }
-        });
-
-    }
-
-    private void initAreaConfig(String areaId,IPSMeasurement.Callback callback) {
-        mapConfig = getMapConfig(mContext, getAreaCode(areaId));
-        mapConfigNet = getMapConfigDate(mContext, "14710233974744268811639554282911310115");//For Net Test,I will use it later
-        mapConfigNet.getGmocratorFixcoordDecypt(sdkRepository.get3DesSalt());
-        if (mapConfig == null) {
-            KLog.e(TAG, "MapConfig is null,please ensure that the SDK is operating properly according to the steps");
             return;
         }
         mCallback = callback;
         Intent intent = new Intent(mContext, IndoorPositionService.class);
         boolean status = mContext.bindService(intent, connection, Context.BIND_AUTO_CREATE);
-        KLog.d(TAG, "Service start status is " + status + ";mapConfig is null==" + (mapConfig == null));
+        KLog.d(TAG, "Service start status is " + status + ";mapConfigNet is null==" + (mapConfigNet == null));
     }
 
-    private void updateMapConfig(String mapID, IndoorPositionService indoorPositionService) {
-
-        if (mapConfig == null) {
-            KLog.e(TAG, "mapConfig==null,data err...");
+    private void initAreaConfig(String areaId) {
+        mSdkRepository.saveAreaId(areaId);
+//        mapConfig = getMapConfig(mContext, getAreaCode(areaId));
+        mapConfigNet = getMapConfigDate(mContext, areaId);//For Net Test,I will use it later
+        if (mapConfigNet == null) {
+            KLog.e(TAG, "MapConfig is null,please ensure that the SDK is operating properly according to the steps");
             return;
         }
-        if (currentMapConfigID.equals(mapID)) {
+    }
+
+    private void updateMapConfig(String areaId, IndoorPositionService indoorPositionService) {
+        if (mapConfigNet == null || !mapConfigNet.getProjectAreaId().equals(areaId)) {
+            KLog.d(TAG,"updateMapConfig and refreshAreaConfig, need initAreaConfig,areaId is "+areaId);
+            initAreaConfig(areaId);
+            refreshAreaConfig(areaId, new IAzimuthNaviManager.IUpdateAreaConfigListener() {
+                @Override
+                public void updateSuccess() {
+                    initAreaConfig(areaId);
+                }
+
+                @Override
+                public void updateError(Throwable e) {
+                }
+
+                @Override
+                public void updateFailed(String msg) {
+                }
+            });
+        }
+        if (mapConfigNet == null) {
+            KLog.e(TAG, "mapConfig==null,data err,Please make sure you have access to indoor map information...");
             return;
         }
         KLog.d(TAG, "updateMapConfig...");
-        currentMapConfigID = mapID;
-        mCurrentConfig = mapConfig.getDataConfig().get(0);
-        for (MapConfig.DataConfigDTO dataConfig : mapConfig.getDataConfig()) {
-            if (dataConfig == null) {
-                continue;
-            }
-            if (dataConfig.getMapid().equals(currentMapConfigID)) {
-                mCurrentConfig = dataConfig;
-                KLog.d(TAG, "updateMapConfig mCurrentConfig...");
-                break;
-            }
-        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            indoorPositionService.setInfoAndStartup(mCurrentConfig);
+            indoorPositionService.setInfoAndStartup(mapConfigNet, mSdkRepository);
         } else {
             KLog.e(TAG, "currentVersion is too low, is " + Build.VERSION.SDK_INT);
         }
@@ -365,7 +364,7 @@ public class AzimuthIndoorStrategy {
             IndoorPositionService.LocalBinder binder = (IndoorPositionService.LocalBinder) service;
             IndoorPositionService indoorPositionService = binder.getService();
             AtomicInteger i = new AtomicInteger();
-            updateMapConfig(currentSetMapID, indoorPositionService);
+            indoorPositionService.setInfoAndStartup(new MapConfigData(),AzimuthIndoorStrategy.this.mSdkRepository);
             indoorPositionService.register(measurement -> {
                 i.getAndIncrement();
                 String text = "\n result" +
@@ -388,12 +387,18 @@ public class AzimuthIndoorStrategy {
                 }
 
                 KLog.i(TAG, "result is " + text);
+
+                if(mapConfigNet != null){
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        if (mCallback != null) {
+                            mCallback.onReceive(measurement);
+                        }
+                    });
+                }else{
+                    KLog.i(TAG, "mapConfigNet is null,cannot post msg");
+                }
+
                 updateMapConfig(measurement.getMapID(), indoorPositionService);
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    if (mCallback != null) {
-                        mCallback.onReceive(measurement);
-                    }
-                });
             });
             mBound = true;
         }
@@ -404,24 +409,8 @@ public class AzimuthIndoorStrategy {
         }
     };
 
-    private MapConfig.DataConfigDTO getDataConfig(String areaId, MapConfig useMapConfig) {
-        if (TextUtils.isEmpty(areaId) || useMapConfig == null || areaId.length() < 6) {
-            KLog.e(TAG, "getDataConfig failed,extUtils.isEmpty(mapid)||useMapConfig==null||mapid.length()<6");
-            return null;
-        }
-        MapConfig.DataConfigDTO result = null;
-        for (MapConfig.DataConfigDTO dataConfig : useMapConfig.getDataConfig()) {
-            if (dataConfig.getMapid().equals(areaId)) {
-                result = dataConfig;
-                KLog.d(TAG, "getDataConfig...");
-                break;
-            }
-        }
-        return result;
-    }
-
     private boolean isAuthorSucess() {
-        if ((isOffLine && !mVerifySucess) || (!isOffLine && TextUtils.isEmpty(sdkRepository.getToken()))) {
+        if ((isOffLine && !mVerifySucess) || (!isOffLine && TextUtils.isEmpty(mSdkRepository.getToken()))) {
             Log.e(TAG, "verify failed...");
             return false;
         }
@@ -434,15 +423,15 @@ public class AzimuthIndoorStrategy {
             return;
         }
         //TODO
-        MapConfig mapConfig = getMapConfig(mContext, getAreaCode(areaId));
-        MapConfig.DataConfigDTO dataConfig = getDataConfig(areaId, mapConfig);
-        if (dataConfig == null) {
-            KLog.e(TAG, "refreshAreaConfig failed ,dataConfig is null,areaId is " + areaId);
+        MapConfigData mapConfig = getMapConfigDate(mContext, areaId);
+        if (mapConfig == null) {
+            KLog.e(TAG, "refreshAreaConfig failed ,mapConfig is null,areaId is " + areaId);
             return;
         }
-        sdkRepository.refreshAreaConfig(new ProjectAreaData(areaId, dataConfig.getVersionNum()), iUpdateAreaConfigListener, true);
-    }
 
+        //TODO 更新区文件 getAreaCodeLocalFile(areaId).getName();
+        //mSdkRepository.refreshAreaConfig(new ProjectAreaData(areaId, mapConfig.getVersionNum()), iUpdateAreaConfigListener, true);
+    }
 
 
     public static String getMapConfigPath() {

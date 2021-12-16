@@ -1,5 +1,7 @@
 package com.indoor;
 
+import android.text.TextUtils;
+
 import androidx.annotation.Keep;
 
 import com.google.gson.Gson;
@@ -7,6 +9,7 @@ import com.google.gson.annotations.SerializedName;
 import com.indoor.data.SDKRepository;
 import com.indoor.utils.KLog;
 import com.indoor.utils.RxEncryptTool;
+
 import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +17,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class MapConfigData {
+    public static final String PSE_MODE_NAME_L1 = "L1";
+    public static final String PSE_MODE_NAME_L5 = "L5";
     private static final String TAG = "MapConfigData";
+
     @SerializedName("projectAreaId")
     private String projectAreaId;
     @SerializedName("projectId")
@@ -66,8 +72,8 @@ public class MapConfigData {
     public static class SequenceDtosDTO {
         @SerializedName("pseModeName")
         private String pseModeName;
-        @SerializedName("spectrumList")
-        private List<Integer> spectrumList;
+        @SerializedName("spectrum")
+        private String spectrum;
     }
 
     @Keep
@@ -147,18 +153,37 @@ public class MapConfigData {
         }
     }
 
-    public GmocratorParameterDecypt getGmocratorFixcoordDecypt(String key){
+
+
+    /**
+     * 获取L1/L5卫星序列号
+     *
+     * @param pseName 卫星序列名
+     * @return
+     */
+    public String getSpectrumList(String pseName){
+        if(TextUtils.isEmpty(pseName)){
+            return null;
+        }
+        String result = "";
+        List<SequenceDtosDTO>sequenceDtosDTOList=getSequenceDtos();
+        for(SequenceDtosDTO sequenceDtosDTO:sequenceDtosDTOList){
+            if(sequenceDtosDTO.getPseModeName().equals(pseName)){
+                result=sequenceDtosDTO.getSpectrum();
+                break;
+            }
+        }
+        return result;
+    }
+
+    public GmocratorParameterDecypt getGmocratorFixcoordDecypt(String key) throws Exception{
         GmocratorParameterDecypt result = null;
         String desStr = RxEncryptTool.decryptBase64_3DES(gmocratorParameter, key);
         Gson gson = new Gson();
         GmocratorParameterDTO gmocratorParameterDTO =null;
-        try{
             gmocratorParameterDTO = gson.fromJson(desStr, GmocratorParameterDTO.class);
             result=new GmocratorParameterDecypt(gmocratorParameterDTO.getGdegzFixcoord(SDKRepository.getSalt()), gmocratorParameterDTO.mapType,
                     gmocratorParameterDTO.getXxGmocratorFixcoord(SDKRepository.getSalt()), gmocratorParameterDTO.getYyGmocratorFixcoord(SDKRepository.getSalt()), gmocratorParameterDTO.getZzGmocratorFixcoord(SDKRepository.getSalt()));
-        }catch(Exception e){
-            KLog.e(TAG, "parsor Exception:"+e.getMessage());
-        }
         return result;
     }
 }

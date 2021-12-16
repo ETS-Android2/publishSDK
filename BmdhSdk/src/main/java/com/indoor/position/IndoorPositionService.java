@@ -15,11 +15,15 @@ import androidx.annotation.Keep;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.indoor.AzimuthIndoorStrategy;
 import com.indoor.MapConfig;
+import com.indoor.MapConfigData;
+import com.indoor.data.SDKRepository;
 import com.indoor.position.swiggenerated.IndoorPositionProcessor;
 import com.indoor.position.swiggenerated.Inputparameter;
 import com.indoor.position.swiggenerated.SatelliteInfo;
 import com.indoor.position.swiggenerated.SatelliteInfoList;
+import com.indoor.utils.KLog;
 
 import lombok.SneakyThrows;
 
@@ -35,8 +39,10 @@ public class IndoorPositionService extends Service {
         System.loadLibrary("IPS");
     }
 
+    private static final String TAG = "IndoorPositionService";
     private final IBinder binder = new LocalBinder();
     private IPSCoreRunner ipsCoreRunner;
+    private MapConfigData mCureentMapConfig = null;
 
 
     /**
@@ -52,7 +58,7 @@ public class IndoorPositionService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d("IndoorPositionService", "Service onCreate");
+        Log.d(TAG, "Service onCreate");
         LocationManager locationManager =
                 (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -69,33 +75,54 @@ public class IndoorPositionService extends Service {
 
     public void onDestroy() {
         super.onDestroy();
-        Log.d("IndoorPositionService", "Service onDestroy");
+        Log.d(TAG, "Service onDestroy");
         ipsCoreRunner.tearDown();
     }
 
-    public void setInfoAndStartup(MapConfig.DataConfigDTO mCurrentConfig) {
-        Log.d("IndoorPositionService", "setInfoAndStartup begin");
-        SatelliteInfoList s=new SatelliteInfoList();
-        for(MapConfig.DataConfigDTO.SatelliteInfoDTO satelliteInfo:mCurrentConfig.getSatelliteInfo()){
-            s.add(new SatelliteInfo(satelliteInfo.getX(),satelliteInfo.getY(),satelliteInfo.getZ(),satelliteInfo.getSvid()));
+    public void setInfoAndStartup(MapConfigData mMapConfig, SDKRepository sdkRepository) {
+        KLog.d(TAG, "setInfoAndStartup begin");
+        if (mMapConfig == null) {
+            KLog.e(TAG, "setInfoAndStartup,mMapConfig is null ,Please make sure you have access to indoor map information....");
+            return;
         }
-        Log.d("IndoorPositionService", "setInfoAndStartup SatelliteInfoDTO");
-        double[] roomCenter=new double[]{mCurrentConfig.getRoomCenter().getX(),mCurrentConfig.getRoomCenter().getY()};
-        double[] threshold_x_y=new double[]{mCurrentConfig.getThresholdXY().getX(),mCurrentConfig.getThresholdXY().getY()};
-        double[] gmocratorfixcoord=new double[]{mCurrentConfig.getGmocratorfixcoord().getX(),mCurrentConfig.getGmocratorfixcoord().getY(),mCurrentConfig.getGmocratorfixcoord().getZ()};
-        double[] ref_Coord = new double[]{mCurrentConfig.getRef_Coord().getX(),mCurrentConfig.getRef_Coord().getY(),mCurrentConfig.getRef_Coord().getZ()};
-        double gmocatordeg = mCurrentConfig.getGmocator_deg();
-        double jingweideg = mCurrentConfig.getJingweideg();
-        boolean is_l1_pse = mCurrentConfig.getIspsemodeL1();
-
-        Inputparameter inputparameter=new Inputparameter(roomCenter,threshold_x_y,
-                ref_Coord,gmocratorfixcoord,gmocatordeg,jingweideg,is_l1_pse);
-
-        inputparameter.setListL1(mCurrentConfig.getListL1());
-        inputparameter.setListL5(mCurrentConfig.getListL5());
-
-        ipsCoreRunner.updateInputData(s,inputparameter);
-
+        if ((mCureentMapConfig != null && AzimuthIndoorStrategy.getAreaCode(mCureentMapConfig.getProjectAreaId()).equals(AzimuthIndoorStrategy.getAreaCode(mMapConfig.getProjectAreaId())))) {
+            KLog.d(TAG, "setInfoAndStartup,same areaCode....");
+            return;
+        }
+        mCureentMapConfig = mMapConfig;
+        double[] roomCenter = new double[]{0, 0};
+        double[] threshold_x_y = new double[]{0, 0};
+        double[] gmocratorfixcoord = new double[]{0, 0, 0};
+        double[] ref_Coord = new double[]{0, 0, 0};
+        double gmocatordeg = 0;
+        double jingweideg = 0;
+        boolean is_l1_pse = true;
+        String strL1 = "1";
+        String strL5 = "1";
+        SatelliteInfoList s = new SatelliteInfoList();
+        try {
+            MapConfigData.GmocratorParameterDecypt gmocratorFixcoordDecypt = mMapConfig.getGmocratorFixcoordDecypt(sdkRepository.get3DesSalt());
+            for (MapConfigData.SatelliteInfoDTO satelliteInfo : mMapConfig.getSatelliteInfo()) {
+                s.add(new SatelliteInfo(satelliteInfo.getXxAxisCoordinate(), satelliteInfo.getYyAxisCoordinate(), satelliteInfo.getZzAxisCoordinate(), satelliteInfo.getSvid()));
+            }
+            Log.d("IndoorPositionService", "setInfoAndStartup SatelliteInfoDTO");
+            roomCenter = new double[]{mMapConfig.getXxRoomCenter(), mMapConfig.getYyRoomCenter()};
+            threshold_x_y = new double[]{mMapConfig.getXxThreshold(), mMapConfig.getYyThreshold()};
+            gmocratorfixcoord = new double[]{gmocratorFixcoordDecypt.getXxGmocratorFixcoord(), gmocratorFixcoordDecypt.getYyGmocratorFixcoord(), gmocratorFixcoordDecypt.getZzGmocratorFixcoord()};
+            ref_Coord = new double[]{mMapConfig.getXxFixedCoor(), mMapConfig.getYyFixedCoor(), mMapConfig.getZzFixedCoor()};
+            gmocatordeg = gmocratorFixcoordDecypt.getGdegzFixcoord();
+            jingweideg = mMapConfig.getLgtLatDeg();
+            is_l1_pse = mMapConfig.getPseModeOne() == 1;
+            strL1 = mMapConfig.getSpectrumList(MapConfigData.PSE_MODE_NAME_L1);
+            strL5 = mMapConfig.getSpectrumList(MapConfigData.PSE_MODE_NAME_L5);
+        } catch (Exception e) {
+            KLog.e(TAG, "setInfoAndStartup Exception:" + e.getMessage());
+        }
+        Inputparameter inputparameter = new Inputparameter(roomCenter, threshold_x_y,
+                ref_Coord, gmocratorfixcoord, gmocatordeg, jingweideg, is_l1_pse);
+        inputparameter.setListL1(strL1);
+        inputparameter.setListL5(strL5);
+        ipsCoreRunner.updateInputData(s, inputparameter);
         Log.d("IndoorPositionService", "setInfoAndStartup");
         boolean gnssStatus = ipsCoreRunner.startUp();
         if (gnssStatus) {
