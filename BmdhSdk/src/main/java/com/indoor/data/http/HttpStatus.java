@@ -14,10 +14,7 @@ public class HttpStatus {
      */
     public static int STATUS_CODE_SUCESS = 200;
 
-    /**
-     * 初始化失败
-     */
-    public static int STATUS_INIT_FAILED = 1001;
+
     /**
      * token过期，需要执行登录 old
      */

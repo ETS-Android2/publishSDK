@@ -5,7 +5,7 @@ package com.indoor.data.http;
  * 该类仅供参考，实际业务返回的固定字段, 根据需求来定义，
  */
 public class BaseResponse<T> {
-    private int resultCode;
+    private String resultCode;
     private String resultMsg;
     private T result;
     private long timestamp;
@@ -18,11 +18,11 @@ public class BaseResponse<T> {
         this.timestamp = timestamp;
     }
 
-    public int getResultCode() {
+    public String getResultCode() {
         return resultCode;
     }
 
-    public void setResultCode(int resultCode) {
+    public void setResultCode(String resultCode) {
         this.resultCode = resultCode;
     }
 
@@ -35,7 +35,7 @@ public class BaseResponse<T> {
     }
 
     public boolean isOk() {
-        return resultCode == 0;
+        return ResultCodeUtils.isRequestOptionSuccess(resultCode);
     }
 
     public String getResultMsg() {

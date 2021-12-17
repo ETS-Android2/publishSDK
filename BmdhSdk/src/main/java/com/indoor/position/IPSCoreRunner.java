@@ -203,7 +203,7 @@ class IPSCoreRunner {
             //areaRange= new double[]{roomCenter[0] - threshold_x_y[0], roomCenter[1] - threshold_x_y[1], roomCenter[0] + threshold_x_y[0], roomCenter[1] + threshold_x_y[1]};
             Log.i(TAG, "init initialAbsolutePositioningBaseCarrierKFTwoDimen");
         }
-        mapID="000002";
+        mapID="14710233974744268811639554282911310115";
         mode=INDOOR;
 
         timer.schedule(new TimerTask() {

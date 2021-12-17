@@ -1,6 +1,7 @@
 package com.indoor;
 
 import android.content.Context;
+
 import androidx.annotation.Keep;
 
 import com.indoor.data.http.BaseResponse;
@@ -63,12 +64,12 @@ public class AzimuthIndoorSDK {
      *
      * @param callback 获取到位置信息后的回调，1s回调一次
      */
-    public void startIndoorLocation(String mapId, IPSMeasurement.Callback callback) {
+    public void startIndoorLocation(IPSMeasurement.Callback callback) {
         if (mAzimuthIndoorStrategy == null) {
             KLog.e(TAG, "mAzimuthIndoorStrategy is null");
             return;
         }
-        mAzimuthIndoorStrategy.startIndoorSdkLocate(mapId, callback);
+        mAzimuthIndoorStrategy.startIndoorSdkLocate(callback);
     }
 
 
@@ -83,34 +84,40 @@ public class AzimuthIndoorSDK {
 
     /**
      * 初始化SDK环境，
-     *a
-     * @param context          环境上下文
+     * a
+     *
+     * @param context             环境上下文
      * @param azimuthIndoorConfig 使用默认值则传入AzimuthIndoorConfig.DEFAULT
      */
     public void init(Context context, AzimuthIndoorConfig azimuthIndoorConfig, IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
         mContext = context.getApplicationContext();
         KLog.init(true);
         Utils.init(context);
+        mAzimuthIndoorStrategy = new AzimuthIndoorStrategy(mContext);
         //TODO 配置文件检测更新
         mAzimuthIndoorConfig = azimuthIndoorConfig;
-        mAzimuthIndoorStrategy = new AzimuthIndoorStrategy(mContext);
         mAzimuthIndoorStrategy.verifySDK(iInitSDKListener);
     }
 
     /**
      * 更新区域配置文件
-     *
      */
-    public void refreshAreaConfig(String areaId){
-        mAzimuthIndoorStrategy.refreshAreaConfig(areaId);
+    public void refreshAreaConfig(String areaId, IAzimuthNaviManager.IUpdateAreaConfigListener iUpdateAreaConfigListener) {
+        mAzimuthIndoorStrategy.refreshAreaConfig(areaId, iUpdateAreaConfigListener);
+    }
+
+    /**
+     * 更新当前AreaId对应的区域配置文件
+     */
+    public void refreshCurrentAreaConfig(){
+        mAzimuthIndoorStrategy.refreshCurrentAreaConfig();
     }
 
     /**
      * 更新市配置文件
-     *
      */
-    public void refreshCityConfig(String areaId){
-        mAzimuthIndoorStrategy.refreshAreaConfig(areaId);
+    public void refreshCityConfig(String areaId, IAzimuthNaviManager.IUpdateAreaConfigListener iUpdateAreaConfigListener) {
+        mAzimuthIndoorStrategy.refreshAreaConfig(areaId, iUpdateAreaConfigListener);
     }
 
 

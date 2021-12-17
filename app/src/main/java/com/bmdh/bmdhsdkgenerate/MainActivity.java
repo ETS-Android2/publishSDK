@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements IPSMeasurement.Ca
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                AzimuthIndoorSDK.getInstance().startIndoorLocation("000004", MainActivity.this);
+                AzimuthIndoorSDK.getInstance().startIndoorLocation( MainActivity.this);
             }
         },5000);
     }

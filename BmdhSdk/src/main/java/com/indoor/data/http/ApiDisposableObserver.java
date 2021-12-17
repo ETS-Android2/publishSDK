@@ -46,48 +46,48 @@ public abstract class ApiDisposableObserver<T> extends DisposableObserver<T> {
     public void onNext(Object o) {
         BaseResponse baseResponse = (BaseResponse) o;
         switch (baseResponse.getResultCode()) {
-            case CodeRule.CODE_200:
-                //请求成功, 正确的操作方式
-                onResult((T) baseResponse.getResult());
-                break;
-            case CodeRule.CODE_220:
-                // 请求成功, 正确的操作方式, 并消息提示
-                onResult((T) baseResponse.getResult());
-                break;
-            case CodeRule.CODE_300:
-                //请求失败，不打印Message
-                KLog.e("请求失败");
-                ToastUtils.showShort("错误代码:", baseResponse.getResultCode());
-                break;
-            case CodeRule.CODE_330:
-                //请求失败，打印Message
-                ToastUtils.showShort(baseResponse.getResultMsg());
-                break;
-            case CodeRule.CODE_500:
-                //服务器内部异常
-                ToastUtils.showShort("错误代码:", baseResponse.getResultCode());
-                break;
-            case CodeRule.CODE_503:
-                //参数为空
-                KLog.e("参数为空");
-                break;
-            case CodeRule.CODE_502:
-                //没有数据
-                KLog.e("没有数据");
-                break;
-            case CodeRule.CODE_510:
-                //无效的Token，提示跳入登录页
-                ToastUtils.showShort("token已过期，请重新登录");
-                //关闭所有页面
-                //跳入登录界面
-                //*****该类仅供参考，实际业务Code, 根据需求来定义，******//
-                break;
-            case CodeRule.CODE_530:
-                ToastUtils.showShort("请先登录");
-                break;
-            case CodeRule.CODE_551:
-                ToastUtils.showShort("错误代码:", baseResponse.getResultCode());
-                break;
+//            case CodeRule.CODE_200:
+//                //请求成功, 正确的操作方式
+//                onResult((T) baseResponse.getResult());
+//                break;
+//            case CodeRule.CODE_220:
+//                // 请求成功, 正确的操作方式, 并消息提示
+//                onResult((T) baseResponse.getResult());
+//                break;
+//            case CodeRule.CODE_300:
+//                //请求失败，不打印Message
+//                KLog.e("请求失败");
+//                ToastUtils.showShort("错误代码:", baseResponse.getResultCode());
+//                break;
+//            case CodeRule.CODE_330:
+//                //请求失败，打印Message
+//                ToastUtils.showShort(baseResponse.getResultMsg());
+//                break;
+//            case CodeRule.CODE_500:
+//                //服务器内部异常
+//                ToastUtils.showShort("错误代码:", baseResponse.getResultCode());
+//                break;
+//            case CodeRule.CODE_503:
+//                //参数为空
+//                KLog.e("参数为空");
+//                break;
+//            case CodeRule.CODE_502:
+//                //没有数据
+//                KLog.e("没有数据");
+//                break;
+//            case CodeRule.CODE_510:
+//                //无效的Token，提示跳入登录页
+//                ToastUtils.showShort("token已过期，请重新登录");
+//                //关闭所有页面
+//                //跳入登录界面
+//                //*****该类仅供参考，实际业务Code, 根据需求来定义，******//
+//                break;
+//            case CodeRule.CODE_530:
+//                ToastUtils.showShort("请先登录");
+//                break;
+//            case CodeRule.CODE_551:
+//                ToastUtils.showShort("错误代码:", baseResponse.getResultCode());
+//                break;
             default:
                 ToastUtils.showShort("错误代码:", baseResponse.getResultCode());
                 break;

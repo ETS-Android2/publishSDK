@@ -39,7 +39,7 @@
         android:theme="@style/Theme.BmdhSdkGenerate">
         <meta-data
             android:name="com.bmdh.indoorsdk.API_KEY"
-            android:value="2FE6D5C690E682D4BC24B228E31E0C4E" />
+            android:value="E9F31F5ED497634A8F879D40394B5742" />
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

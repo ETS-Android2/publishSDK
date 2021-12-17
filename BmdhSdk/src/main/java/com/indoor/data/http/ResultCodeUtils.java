@@ -1,13 +1,54 @@
 package com.indoor.data.http;
 
+import android.text.TextUtils;
+
 public class ResultCodeUtils {
+
+    /**
+     * 鉴权失败
+     *
+     * @param code
+     * @return
+     */
+    public static boolean isAuthorErr(String code){
+        if(TextUtils.isEmpty(code)){
+            return false;
+        }
+        return code.equals(RESULTCODE.VALIDATION_ERROR);
+    }
+
+    /**
+     * Token失败
+     *
+     * @param code
+     * @return
+     */
+    public static boolean isTokenErr(String code){
+        if(TextUtils.isEmpty(code)){
+            return false;
+        }
+        return code.startsWith("403");
+    }
+
+    /**
+     * 操作请求是否成功
+     *
+     * @param code
+     * @return
+     */
+    public static boolean isRequestOptionSuccess(String code){
+        if(TextUtils.isEmpty(code)){
+            return false;
+        }
+        return code.startsWith(RESULTCODE.SUCCESS);
+    }
 
     public static String getHttpResultMsg(String code){
 
         String resultMsg="";
         switch (code) {
             case RESULTCODE.SUCCESS:
-                resultMsg = "操作未授权";
+                resultMsg = "操作成功";
                 break;
             case RESULTCODE.UPDATE_STATE_NO:
                 resultMsg = "无可用更新";
@@ -50,7 +91,7 @@ public class ResultCodeUtils {
     /**
      * 约定异常 这个具体规则需要与服务端或者领导商讨定义
      */
-    class RESULTCODE {
+    public class RESULTCODE {
         /**
          * 操作成功
          */
@@ -59,6 +100,7 @@ public class ResultCodeUtils {
          * 无可用更新
          */
         public static final String UPDATE_STATE_NO = "200-1";
+
         /**
          * 系统异常
          */
@@ -77,6 +119,7 @@ public class ResultCodeUtils {
          * 校验异常
          */
         public static final String VALIDATION_ERROR = "500-3";
+
 
         /**
          * 无权访问
@@ -101,5 +144,15 @@ public class ResultCodeUtils {
          * 服务未找到
          */
         public static final String GATEWAY_NOT_FOUND_SERVICE = "404";
+
+        /**
+         * 网络异常
+         */
+        public static final String EXCEPTION_ERROR = "00040";
+
+        /**
+         * 离线状态
+         */
+        public static final String OFFLINE = "00041";
     }
 }
