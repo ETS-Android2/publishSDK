@@ -31,16 +31,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class AzimuthIndoorStrategy {
     private static final String TAG = "BmdhIndoorStrategy";
 
     private static final int MIN_FILENAME_LENGTH=8;
     private static final int AREA_ID_LENGTH=38;//合法的区域id的长度
     private static final boolean IS_NEED_SCRIPT = true;
+    private volatile static String areaID ="14710233974744268811639554282911310115";
     private static final String FOLDER_NAME_MAPDATA = "mapconfig";
     private static String MAPCONFIG_FOLDER_PATH;
 //    private static String CONFIG_ASSET_NAME = "440312";
@@ -53,7 +53,8 @@ public class AzimuthIndoorStrategy {
     private IPSMeasurement.Callback mCallback;
     private MapConfigData mapConfigNet;
     private SDKRepository mSdkRepository;
-    private IPSMeasurement ipsMeasurement = null;
+    private IPSMeasurement mIpsMeasurement = null;
+    private IndoorPositionService indoorPositionService=null;
     private IAzimuthNaviManager.INaviIndoorStateChangeListener iNaviIndoorStateChangeListener = null;
 
     public AzimuthIndoorStrategy(Context context) {
@@ -357,10 +358,13 @@ public class AzimuthIndoorStrategy {
     /**
      * 销毁当前SDK资源
      */
-    public void clearData() {
+    public void clearDataAndExit() {
+        KLog.d(TAG, "clearDataAndExit...");
+        mSdkRepository.saveUserActionDataToDB(mIpsMeasurement);
         mSdkRepository.destroyInstance();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void setAreaId(String areaId) {
         initAreaConfig(areaId);
     }
@@ -381,14 +385,30 @@ public class AzimuthIndoorStrategy {
         KLog.d(TAG, "Service start status is " + status + ";mapConfigNet is null==" + (mapConfigNet == null));
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void initAreaConfig(String areaId) {
+        if(!isAreaIdLegal(areaId)){
+            KLog.e(TAG,"AreaId is error...");
+            return;
+        }
         mSdkRepository.saveAreaId(areaId);
 //        mapConfig = getMapConfig(mContext, getAreaCode(areaId));
         mapConfigNet = getMapConfigDate(mContext, areaId);//For Net Test,I will use it later
         if (mapConfigNet == null) {
-            KLog.e(TAG, "MapConfig is null,please ensure that the SDK is operating properly according to the steps");
+            KLog.e(TAG, "MapConfig is null,please ensure that the SDK is operating properly according to the ,areaId is " + areaId);
             return;
+        } else {
+            KLog.d(TAG, "initAreaConfig success...");
+            if(indoorPositionService!=null){
+                indoorPositionService.setIpsDefualtAreaId(areaID);
+            }
+            areaID=areaId;
+            updateMapConfig(areaId);
         }
+    }
+
+    public static String getDefaultAreaId(){
+        return  areaID;
     }
 
     /**
@@ -401,6 +421,7 @@ public class AzimuthIndoorStrategy {
             return;
         }
         refreshAreaConfig(mCureentSetAreaId, new IAzimuthNaviManager.IUpdateAreaConfigListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void updateSuccess() {
                 initAreaConfig(mCureentSetAreaId);
@@ -416,7 +437,8 @@ public class AzimuthIndoorStrategy {
         });
     }
 
-    private void updateMapConfig(String areaId, IndoorPositionService indoorPositionService) {
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void updateMapConfig(String areaId) {
         if (!mCureentSetAreaId.equals(areaId) ||mapConfigNet == null || !mapConfigNet.getProjectAreaId().equals(areaId)) {
             KLog.d(TAG,"updateMapConfig and refreshAreaConfig, need initAreaConfig,areaId is "+areaId);
             mCureentSetAreaId = areaId;
@@ -428,10 +450,10 @@ public class AzimuthIndoorStrategy {
             return;
         }
         KLog.d(TAG, "updateMapConfig...");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O&&indoorPositionService!=null) {
             indoorPositionService.setInfoAndStartup(mapConfigNet, mSdkRepository);
         } else {
-            KLog.e(TAG, "current OS Version is too low, is " + Build.VERSION.SDK_INT);
+            KLog.e(TAG, "current OS Version is too low or IndoorPositionService has not started,Version is " + Build.VERSION.SDK_INT);
         }
     }
 
@@ -443,9 +465,16 @@ public class AzimuthIndoorStrategy {
                                        IBinder service) {
             KLog.e(TAG, "Service connected!");
             IndoorPositionService.LocalBinder binder = (IndoorPositionService.LocalBinder) service;
-            IndoorPositionService indoorPositionService = binder.getService();
+            indoorPositionService = binder.getService();
             AtomicInteger i = new AtomicInteger();
-            indoorPositionService.setInfoAndStartup(new MapConfigData(),AzimuthIndoorStrategy.this.mSdkRepository);//第一次调用启动定时器需要
+            indoorPositionService.setIpsDefualtAreaId(areaID);
+            if(mapConfigNet == null){
+                indoorPositionService.setInfoAndStartup(new MapConfigData(),AzimuthIndoorStrategy.this.mSdkRepository);//第一次调用启动定时器需要
+            }else{
+                KLog.d(TAG,"mapConfigNet != null,so set it");
+                indoorPositionService.setInfoAndStartup(mapConfigNet,AzimuthIndoorStrategy.this.mSdkRepository);
+            }
+
             indoorPositionService.register(measurement -> {
                 i.getAndIncrement();
                 String text = "\n result" +
@@ -458,14 +487,17 @@ public class AzimuthIndoorStrategy {
                         "mapID=" + measurement.getMapID() + "\n" +
                         "Mode=" + measurement.getMode() + "\n" + "定位次数:" + i + "\n" + measurement.getText();
                 if (iNaviIndoorStateChangeListener != null) {
-                    if (ipsMeasurement == null) {
+                    if (mIpsMeasurement == null) {
                         iNaviIndoorStateChangeListener.onIndoorOrOutdoorChanged(measurement.getMode());
+                        mSdkRepository.saveUserActionDataToDB(measurement);
                     } else {
-                        if (!ipsMeasurement.mode.equals(measurement.getMode())) {
+                        if (!mIpsMeasurement.mode.equals(measurement.getMode())) {
                             iNaviIndoorStateChangeListener.onIndoorOrOutdoorChanged(measurement.getMode());
+                            mSdkRepository.saveUserActionDataToDB(measurement);
                         }
                     }
                 }
+                mIpsMeasurement =measurement;
 
                 KLog.i(TAG, "result is " + text);
 
@@ -479,7 +511,7 @@ public class AzimuthIndoorStrategy {
                     KLog.i(TAG, "mapConfigNet is null,cannot post msg");
                 }
 
-                updateMapConfig(measurement.getMapID(), indoorPositionService);
+//                updateMapConfig(measurement.getMapID(), indoorPositionService);  现在设备端还不能返回areid，都是客户端传入的areid,故更新无意义
             });
             mBound = true;
         }

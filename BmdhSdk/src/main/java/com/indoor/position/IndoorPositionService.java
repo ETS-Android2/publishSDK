@@ -79,6 +79,10 @@ public class IndoorPositionService extends Service {
         ipsCoreRunner.tearDown();
     }
 
+    public void setIpsDefualtAreaId(String areaId){
+        ipsCoreRunner.setAreaID(areaId);
+    }
+
     public void setInfoAndStartup(MapConfigData mMapConfig, SDKRepository sdkRepository) {
         KLog.d(TAG, "setInfoAndStartup begin");
         if (mMapConfig == null) {

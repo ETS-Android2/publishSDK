@@ -10,6 +10,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.indoor.AzimuthIndoorStrategy;
 import com.indoor.position.swiggenerated.EnviromentData;
 import com.indoor.position.swiggenerated.IndoorPositionMeasurement;
 import com.indoor.position.swiggenerated.IndoorPositionProcessor;
@@ -45,7 +46,7 @@ class IPSCoreRunner {
     // TODO: refactor this
     private double[] bluetoothReferLocation={1,2,3};
     private IPSMeasurement.Mode mode= OUTDOOR;
-    private String mapID;
+    private String areaID;
     private boolean hasinitonedeKF=false;
     private boolean hasinittwodeKF=false;
 
@@ -147,7 +148,7 @@ class IPSCoreRunner {
         if (!maxId.equals("") && maxCnt >= 2) {
          if ((maxId.equals("017") || maxId.equals("018")) && mode == OUTDOOR) {
                 mode = INDOOR;
-                mapID="000001";
+                areaID ="000001";
                 if(!hasinitonedeKF) {
                     indoorPositionProcessor.initialAPBCaKFOneDimen();
                     hasinitonedeKF=true;
@@ -163,7 +164,7 @@ class IPSCoreRunner {
                     //areaRange= new double[]{roomCenter[0] - threshold_x_y[0], roomCenter[1] - threshold_x_y[1], roomCenter[0] + threshold_x_y[0], roomCenter[1] + threshold_x_y[1]};
                     Log.i(TAG, "init initialAbsolutePositioningBaseCarrierKFTwoDimen");
                 }
-                mapID="000002";
+                areaID ="000002";
                 mode=INDOOR;
             }
             if(bluetoothLabel.containsKey(maxId)) {
@@ -195,6 +196,10 @@ class IPSCoreRunner {
 
     }
 
+    public void setAreaID(String areaID){
+        this.areaID = areaID;
+    }
+
     void CallbackSchedule() {
         long period = 1000;
         if(!hasinittwodeKF) {
@@ -203,7 +208,7 @@ class IPSCoreRunner {
             //areaRange= new double[]{roomCenter[0] - threshold_x_y[0], roomCenter[1] - threshold_x_y[1], roomCenter[0] + threshold_x_y[0], roomCenter[1] + threshold_x_y[1]};
             Log.i(TAG, "init initialAbsolutePositioningBaseCarrierKFTwoDimen");
         }
-        mapID="14710233974744268811639554282911310115";
+        areaID= AzimuthIndoorStrategy.getDefaultAreaId();
         mode=INDOOR;
 
         timer.schedule(new TimerTask() {
@@ -286,25 +291,25 @@ class IPSCoreRunner {
                             debugstring = "\n当前L5伪卫星数," + finalInputMeasurementsL5.size() +
                                     "\n当前L1伪卫星数," + finalInputMeasurementsL1.size() +"\n"+
                                     posresult.getDescription();
-                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord, debugstring, mapID, mode));
+                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord, debugstring, areaID, mode));
                             finalInputMeasurementsL5.clear();
                             finalInputMeasurementsL1.clear();
                             stepProcessor.clearStepjingwei();
                         }
                         else
                         {
-                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"重捕获复位", mapID, mode));
+                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"重捕获复位", areaID, mode));
                             gnssProcessor.tearDown();
                             gnssProcessor.startUp();
                             indoorPositionProcessor.initialAPBCKFTwoDimen();
                         }
                     } else {
-                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"无测量值\n", mapID, mode));
+                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"无测量值\n", areaID, mode));
                     }
                 } else {
                     //非室内模式
                     Log.i(TAG, "run: 室外模式！！");
-                    c.onReceive(coordExchange(null, gmocratorfixcoord, 0,"室外模式", mapID, mode));
+                    c.onReceive(coordExchange(null, gmocratorfixcoord, 0,"室外模式", areaID, mode));
                 }
             }
         }, period, period);

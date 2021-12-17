@@ -2,6 +2,7 @@ package com.indoor.data;
 
 import androidx.annotation.NonNull;
 
+import com.google.gson.Gson;
 import com.indoor.AzimuthIndoorStrategy;
 import com.indoor.IAzimuthNaviManager;
 import com.indoor.data.entity.author.AuthorData;
@@ -18,6 +19,7 @@ import com.indoor.data.http.download.ProgressCallBack;
 import com.indoor.data.local.LocalDataSource;
 import com.indoor.data.local.LocalDataSourceImpl;
 import com.indoor.data.local.db.UserActionData;
+import com.indoor.position.IPSMeasurement;
 import com.indoor.utils.KLog;
 import com.indoor.utils.RxEncryptTool;
 import com.indoor.utils.RxUtils;
@@ -34,7 +36,7 @@ import io.reactivex.functions.Consumer;
  * Created by Aaron on 2021/11/18.
  */
 public class SDKRepository {
-    private static final String TAG = "HttpDataSourceImpl";
+    private static final String TAG = "SDKRepository";
     private static final String SALT = "shanghai-azimuth-data-Technology-Company-Limited-@-api-key-salt-001-*";
     private volatile static SDKRepository INSTANCE = null;
     private final HttpDataSource mHttpDataSource;
@@ -136,19 +138,6 @@ public class SDKRepository {
      * 提交日志信息
      */
     public void submitDefineLogRecord(boolean shouldRetry) {
-
-//        UserActionData userActionData=new UserActionData();
-//        userActionData.machineManu="";
-//        userActionData.machineOs="Android";
-//        userActionData.apiKey= mLocalDataSource.getApiKey();
-//        userActionData.floorNum="1";
-//        userActionData.ipsInfo="info";
-//        userActionData.latitude="124.0003435";
-//        userActionData.longitude="324.0003435";
-//        userActionData.positionState=1;
-//        userActionData.projectAreaId=getAreaId();
-//        userActionData.uuid="dsdsdsdasdas2321426346235";
-//        saveUserActionDataToDB(userActionData);
         List<UserActionData> userActionDatas = mLocalDataSource.getLimitUserActionDataToDB();
         if (userActionDatas == null || userActionDatas.size() == 0) {
             KLog.d(TAG, "no log to submitDefineLogRecord");
@@ -174,7 +163,7 @@ public class SDKRepository {
 
                             }
                         } else if (shouldRetry && ResultCodeUtils.isTokenErr(entity.getResultCode())) {
-                            //TODOhandle token error
+                            //TODO handle token error
                             KLog.e(TAG, "submit failed,token error,statusCode is " + entity.getResultCode());
                             KLog.e(TAG, "refreshAreaConfig Error:" + ResultCodeUtils.getHttpResultMsg(entity.getResultCode()));
                             verrifySDK(getAuthorData(), new IAzimuthNaviManager.IInitSDKListener() {
@@ -218,7 +207,20 @@ public class SDKRepository {
     /**
      * save 用户数据
      */
-    void saveUserActionDataToDB(UserActionData... userActionData) {
+    public void saveUserActionDataToDB(IPSMeasurement ipsMeasurement) {
+
+        Gson gson = new Gson();
+        UserActionData userActionData=new UserActionData();
+        userActionData.machineModel="";
+        userActionData.machineOs="Android";
+        userActionData.apiKey= mLocalDataSource.getApiKey();
+        userActionData.floorNum="1";
+        userActionData.ipsInfo=gson.toJson(ipsMeasurement);
+        userActionData.latitude="124.0003435";
+        userActionData.longitude="324.0003435";
+        userActionData.positionState=1;
+        userActionData.projectAreaId=ipsMeasurement.getMapID();
+        userActionData.uuid="dsdsdsdasdas2321426346235";
         mLocalDataSource.saveUserActionDataToDB(userActionData);
     }
 

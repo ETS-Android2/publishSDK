@@ -1,15 +1,14 @@
 package com.indoor;
 
 import android.content.Context;
+import android.os.Build;
 
 import androidx.annotation.Keep;
+import androidx.annotation.RequiresApi;
 
-import com.indoor.data.http.BaseResponse;
 import com.indoor.position.IPSMeasurement;
 import com.indoor.utils.KLog;
 import com.indoor.utils.Utils;
-
-import io.reactivex.Observable;
 
 @Keep
 public class AzimuthIndoorSDK {
@@ -120,7 +119,15 @@ public class AzimuthIndoorSDK {
         mAzimuthIndoorStrategy.refreshAreaConfig(areaId, iUpdateAreaConfigListener);
     }
 
-
+    /**
+     * 设置区域ID
+     *
+     * @param areaId
+     */
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void setAreaId(String areaId) {
+        mAzimuthIndoorStrategy.setAreaId(areaId);
+    }
     /****************************在Activit或Fragment的各个生命周期做不同的设置，比如蓝牙扫描频率************************************************/
     public void onCreate() {
 
@@ -148,7 +155,7 @@ public class AzimuthIndoorSDK {
      * 销毁当前SDK资源
      */
     public void exitSDK() {
-        mAzimuthIndoorStrategy.clearData();
+        mAzimuthIndoorStrategy.clearDataAndExit();
     }
 
 

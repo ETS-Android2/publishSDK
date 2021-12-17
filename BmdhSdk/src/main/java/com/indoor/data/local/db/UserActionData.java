@@ -42,8 +42,8 @@ public class UserActionData {
     @ColumnInfo(name = "machineOs")
     public String machineOs;
     //机器制造厂商
-    @ColumnInfo(name = "machineManu")
-    public String machineManu;
+    @ColumnInfo(name = "machineModel")
+    public String machineModel;
 
 
 
