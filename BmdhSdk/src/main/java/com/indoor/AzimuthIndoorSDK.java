@@ -11,6 +11,7 @@ import com.indoor.utils.KLog;
 import com.indoor.utils.Utils;
 
 @Keep
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class AzimuthIndoorSDK {
     private static final String TAG = "AzimuthIndoorSDK";
     private static final String SDK_VERSION = "V1.0";
@@ -83,7 +84,7 @@ public class AzimuthIndoorSDK {
 
     /**
      * 初始化SDK环境，
-     * a
+     *
      *
      * @param context             环境上下文
      * @param azimuthIndoorConfig 使用默认值则传入AzimuthIndoorConfig.DEFAULT
