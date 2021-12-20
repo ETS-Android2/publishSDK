@@ -236,6 +236,8 @@ class IPSCoreRunner {
 
                 if (mode == INDOOR) {
                     GNSSProcessor.GNSSFilter fliter;
+                    SatelliteIndoorMeasurementList finalInputMeasurementsL1 = new SatelliteIndoorMeasurementList();
+                    SatelliteIndoorMeasurementList finalInputMeasurementsL5 = new SatelliteIndoorMeasurementList();
                     if (gnssData != null&&gnssData.getSatelliteGNSSMeasurements().size()>0) {
                         if(deltaTimeMillis<3000) {
                             if(ispsemodeL1)
@@ -247,9 +249,6 @@ class IPSCoreRunner {
                                 fliter = new GNSSProcessor.GNSSFilter(GNSSProcessor.GNSSFilter.flitermod.freL5);
                                 fliter.setflitermode(GNSSProcessor.GNSSFilter.flitermod.freL5, listL5);
                             }
-                            SatelliteIndoorMeasurementList finalInputMeasurementsL1 = new SatelliteIndoorMeasurementList();
-                            SatelliteIndoorMeasurementList finalInputMeasurementsL5 = new SatelliteIndoorMeasurementList();
-                            if(gnssData!=null) {
                                 ImmutableList<GNSSData.SatelliteGNSSMeasurements> finalGnssData = gnssData.
                                         getSatelliteGNSSMeasurements().values().stream().filter(fliter).collect(ImmutableList.toImmutableList());
                                 finalGnssData.asList().forEach(
@@ -286,7 +285,6 @@ class IPSCoreRunner {
                                             m.setpseudorangeRateUncertaintyMetersPerSecond(s.getPseudorangeRateUncertaintyMetersPerSecond());
                                             finalInputMeasurementsL1.add(m);
                                         });
-                            }
                             posresult = indoorPositionProcessor.run(finalInputMeasurementsL1,finalInputMeasurementsL5,enviromentData);
                             debugstring = "\n当前L5伪卫星数," + finalInputMeasurementsL5.size() +
                                     "\n当前L1伪卫星数," + finalInputMeasurementsL1.size() +"\n"+
@@ -294,23 +292,27 @@ class IPSCoreRunner {
                             c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord, debugstring, areaID, mode));
                             finalInputMeasurementsL5.clear();
                             finalInputMeasurementsL1.clear();
-                            stepProcessor.clearStepjingwei();
                         }
                         else
                         {
-                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"重捕获复位", areaID, mode));
+                            posresult = indoorPositionProcessor.run(finalInputMeasurementsL1,finalInputMeasurementsL5,enviromentData);
+                            debugstring = "重捕获复位" +"\n"+
+                                    posresult.getDescription();
+                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,debugstring, areaID, mode));
                             gnssProcessor.tearDown();
                             gnssProcessor.startUp();
                             indoorPositionProcessor.initialAPBCKFTwoDimen();
                         }
                     } else {
-                            c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"无测量值\n", areaID, mode));
+                        posresult = indoorPositionProcessor.run(finalInputMeasurementsL1,finalInputMeasurementsL5,enviromentData);
+                        c.onReceive(coordExchange(posresult, gmocratorfixcoord, gdegZfixcoord,"无测量信息\n", areaID, mode));
                     }
                 } else {
                     //非室内模式
                     Log.i(TAG, "run: 室外模式！！");
                     c.onReceive(coordExchange(null, gmocratorfixcoord, 0,"室外模式", areaID, mode));
                 }
+                stepProcessor.clearStepjingwei();
             }
         }, period, period);
     }
