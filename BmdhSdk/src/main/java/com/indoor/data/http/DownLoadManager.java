@@ -24,9 +24,9 @@ import retrofit2.http.Url;
  */
 
 public class DownLoadManager {
-    private static DownLoadManager instance;
+    private static DownLoadManager mInstance;
 
-    private static Retrofit retrofit;
+    private static Retrofit mRetrofit;
 
     private DownLoadManager() {
         buildNetWork();
@@ -37,16 +37,16 @@ public class DownLoadManager {
      *
      * @return DownLoadManager
      */
-    public static DownLoadManager getInstance() {
-        if (instance == null) {
-            instance = new DownLoadManager();
+    public static DownLoadManager getmInstance() {
+        if (mInstance == null) {
+            mInstance = new DownLoadManager();
         }
-        return instance;
+        return mInstance;
     }
 
     //下载
     public void load(String downUrl, final ProgressCallBack callBack) {
-        retrofit.create(ApiService.class)
+        mRetrofit.create(ApiService.class)
                 .download(downUrl)
                 .subscribeOn(Schedulers.io())//请求网络 在调度者的io线程
                 .observeOn(Schedulers.io()) //指定线程保存文件
@@ -66,7 +66,7 @@ public class DownLoadManager {
                 .connectTimeout(20, TimeUnit.SECONDS)
                 .build();
 
-        retrofit = new Retrofit.Builder()
+        mRetrofit = new Retrofit.Builder()
                 .client(okHttpClient)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .baseUrl(NetworkUtil.url)

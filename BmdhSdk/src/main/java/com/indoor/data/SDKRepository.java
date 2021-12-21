@@ -12,7 +12,6 @@ import com.indoor.data.http.DownLoadManager;
 import com.indoor.data.http.ExceptionHandle;
 import com.indoor.data.http.HttpDataSource;
 import com.indoor.data.http.HttpDataSourceImpl;
-import com.indoor.data.http.HttpStatus;
 import com.indoor.data.http.ResponseThrowable;
 import com.indoor.data.http.ResultCodeUtils;
 import com.indoor.data.http.download.ProgressCallBack;
@@ -131,7 +130,7 @@ public class SDKRepository {
         String saltEighteen=getSalt().substring(10,Math.min(getSalt().length()-10, 28));
         String mSalt=packageNameSix+sha1Sixteen+apikeyTwenty+saltEighteen;
         mDesSalt = RxEncryptTool.encryptMD5ToString(mSalt, getSalt());
-        KLog.e(TAG, "set3DesSalt,mSalt is "+mSalt+";mDesSalt is "+mDesSalt);
+//        KLog.e(TAG, "set3DesSalt,mSalt is "+mSalt+";mDesSalt is "+mDesSalt);
     }
 
     /**
@@ -298,7 +297,7 @@ public class SDKRepository {
                             //TODO 下载配置文件
                             String url = entity.getResult();
                             String areaId = projectAreaData.getProjectAreaId();
-                            DownLoadManager.getInstance().load(url, new ProgressCallBack(AzimuthIndoorStrategy.getMapConfigPath(), AzimuthIndoorStrategy.getAreaCode(areaId)) {
+                            DownLoadManager.getmInstance().load(url, new ProgressCallBack(AzimuthIndoorStrategy.getMapConfigPath(), AzimuthIndoorStrategy.getAreaCode(areaId)) {
                                 @Override
                                 public void onSuccess(Object o) {
                                     KLog.d(TAG, "load config sucess...");

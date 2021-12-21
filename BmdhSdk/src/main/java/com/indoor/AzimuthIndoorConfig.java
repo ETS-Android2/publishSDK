@@ -11,12 +11,12 @@ public class AzimuthIndoorConfig {
     public static final HashMap<String,double[]> FIX_COORD =new HashMap<>();
     private static final String MAP_50078="50078";
 
-    public Context context;
-    public String sdcardRootPath;
-    public String appFolderName;
-    public String appId;
-    public String appKey;
-    public String secretKey;
+    public Context mContext;
+    public String mSdcardRootPath;
+    public String mAppFolderName;
+    public String mAppId;
+    public String mAppKey;
+    public String mSecretKey;
 
 
     static {
@@ -24,12 +24,12 @@ public class AzimuthIndoorConfig {
     }
 
     private AzimuthIndoorConfig(Context var1, String var2, String var3, String var4, String var5, String var6) {
-        this.context = var1;
-        this.sdcardRootPath = var2;
-        this.appFolderName = var3;
-        this.appId = var4;
-        this.appKey = var5;
-        this.secretKey = var6;
+        this.mContext = var1;
+        this.mSdcardRootPath = var2;
+        this.mAppFolderName = var3;
+        this.mAppId = var4;
+        this.mAppKey = var5;
+        this.mSecretKey = var6;
     }
 
     public static double[] getFixCoord(String mapID){

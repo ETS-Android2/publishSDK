@@ -16,8 +16,6 @@ public class AzimuthIndoorSDK {
     private static final String TAG = "AzimuthIndoorSDK";
     private static final String SDK_VERSION = "V1.0";
     private static volatile AzimuthIndoorSDK mInstance;
-
-    private AzimuthIndoorConfig mAzimuthIndoorConfig = null;
     private Context mContext;
     private AzimuthIndoorStrategy mAzimuthIndoorStrategy;
 
@@ -53,7 +51,7 @@ public class AzimuthIndoorSDK {
      */
     public boolean isCurrentIndoor() {
         if (mAzimuthIndoorStrategy == null) {
-            KLog.e(TAG, "mAzimuthIndoorStrategy is null");
+            KLog.e(TAG, "mAzimuthIndoorStrategy is null,please invoke init() first...");
             return false;
         }
         return mAzimuthIndoorStrategy.ismIsIndoor();
@@ -66,7 +64,7 @@ public class AzimuthIndoorSDK {
      */
     public void startIndoorLocation(IPSMeasurement.Callback callback) {
         if (mAzimuthIndoorStrategy == null) {
-            KLog.e(TAG, "mAzimuthIndoorStrategy is null");
+            KLog.e(TAG, "mAzimuthIndoorStrategy is null,please invoke init() first...");
             return;
         }
         mAzimuthIndoorStrategy.startIndoorSdkLocate(callback);
@@ -87,15 +85,13 @@ public class AzimuthIndoorSDK {
      *
      *
      * @param context             环境上下文
-     * @param azimuthIndoorConfig 使用默认值则传入AzimuthIndoorConfig.DEFAULT
      */
-    public void init(Context context, AzimuthIndoorConfig azimuthIndoorConfig, IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
+    public void init(Context context, IAzimuthNaviManager.IInitSDKListener iInitSDKListener) {
         mContext = context.getApplicationContext();
         KLog.init(true);
         Utils.init(context);
         mAzimuthIndoorStrategy = new AzimuthIndoorStrategy(mContext);
         //TODO 配置文件检测更新
-        mAzimuthIndoorConfig = azimuthIndoorConfig;
         mAzimuthIndoorStrategy.verifySDK(iInitSDKListener);
     }
 
@@ -103,6 +99,10 @@ public class AzimuthIndoorSDK {
      * 更新区域配置文件
      */
     public void refreshAreaConfig(String areaId, IAzimuthNaviManager.IUpdateAreaConfigListener iUpdateAreaConfigListener) {
+        if (mAzimuthIndoorStrategy == null) {
+            KLog.e(TAG, "mAzimuthIndoorStrategy is null,please invoke init() first...");
+            return;
+        }
         mAzimuthIndoorStrategy.refreshAreaConfig(areaId, iUpdateAreaConfigListener);
     }
 
@@ -117,6 +117,10 @@ public class AzimuthIndoorSDK {
      * 更新市配置文件
      */
     public void refreshCityConfig(String areaId, IAzimuthNaviManager.IUpdateAreaConfigListener iUpdateAreaConfigListener) {
+        if (mAzimuthIndoorStrategy == null) {
+            KLog.e(TAG, "mAzimuthIndoorStrategy is null,please invoke init() first...");
+            return;
+        }
         mAzimuthIndoorStrategy.refreshAreaConfig(areaId, iUpdateAreaConfigListener);
     }
 
@@ -127,6 +131,10 @@ public class AzimuthIndoorSDK {
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void setAreaId(String areaId) {
+        if (mAzimuthIndoorStrategy == null) {
+            KLog.e(TAG, "mAzimuthIndoorStrategy is null,please invoke init() first...");
+            return;
+        }
         mAzimuthIndoorStrategy.setAreaId(areaId);
     }
     /****************************在Activit或Fragment的各个生命周期做不同的设置，比如蓝牙扫描频率************************************************/
@@ -156,6 +164,10 @@ public class AzimuthIndoorSDK {
      * 销毁当前SDK资源
      */
     public void exitSDK() {
+        if (mAzimuthIndoorStrategy == null) {
+            KLog.e(TAG, "mAzimuthIndoorStrategy is null,please invoke init() first...");
+            return;
+        }
         mAzimuthIndoorStrategy.clearDataAndExit();
     }
 
