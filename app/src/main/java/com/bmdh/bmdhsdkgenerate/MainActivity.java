@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
-
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class MainActivity extends AppCompatActivity implements IPSMeasurement.Callback {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -55,12 +55,14 @@ public class MainActivity extends AppCompatActivity implements IPSMeasurement.Ca
     String currentFilePath;
     private Button startlog;
     private Button endlog;
-    @RequiresApi(api = Build.VERSION_CODES.M)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION}, 100);

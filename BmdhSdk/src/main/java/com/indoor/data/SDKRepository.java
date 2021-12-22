@@ -1,6 +1,9 @@
 package com.indoor.data;
 
+import android.os.Build;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import com.google.gson.Gson;
 import com.indoor.AzimuthIndoorStrategy;
@@ -20,8 +23,10 @@ import com.indoor.data.local.LocalDataSourceImpl;
 import com.indoor.data.local.db.UserActionData;
 import com.indoor.position.IPSMeasurement;
 import com.indoor.utils.KLog;
+import com.indoor.utils.RxDeviceTool;
 import com.indoor.utils.RxEncryptTool;
 import com.indoor.utils.RxUtils;
+import com.indoor.utils.Utils;
 
 import java.util.List;
 
@@ -210,16 +215,16 @@ public class SDKRepository {
 
         Gson gson = new Gson();
         UserActionData userActionData=new UserActionData();
-        userActionData.machineModel="";
-        userActionData.machineOs="Android";
+        userActionData.machineModel=RxDeviceTool.getBuildMANUFACTURER();
+        userActionData.machineOs=RxDeviceTool.getAndroidSdkVersion();
         userActionData.apiKey= mLocalDataSource.getApiKey();
         userActionData.floorNum="1";
         userActionData.ipsInfo=gson.toJson(ipsMeasurement);
         userActionData.latitude="124.0003435";
         userActionData.longitude="324.0003435";
-        userActionData.positionState=1;
+        userActionData.positionState=0;
         userActionData.projectAreaId=ipsMeasurement.getMapID();
-        userActionData.uuid="dsdsdsdasdas2321426346235";
+        userActionData.uuid= RxDeviceTool.getDeviceId(Utils.getContext());
         mLocalDataSource.saveUserActionDataToDB(userActionData);
     }
 
@@ -288,6 +293,7 @@ public class SDKRepository {
                     KLog.e(TAG, "doOnSubscribe ... ");
                 })
                 .subscribe(new Consumer<BaseResponse<String>>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void accept(BaseResponse<String> entity) throws Exception {
                         KLog.e(TAG, "refreshAreaConfig result is " + entity.getResult());
