@@ -118,8 +118,10 @@ public class RxDeviceTool {
                 return deviceId.toString();
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            deviceId.append("id").append(getUUID(context));
+            KLog.e(TAG,"getDeviceID Exception:"+e.getMessage());
+            String uuidException =getUUID(context);
+            deviceId.append("id").append(uuidException);
+            saveSPUUID(context,uuidException);
         }
 
         KLog.e(TAG,"getDeviceId : "+ deviceId.toString());
@@ -267,12 +269,18 @@ public class RxDeviceTool {
             toastError(context, "请先获取读取手机设备权限");
             return null;
         }
-        if (mTelephony.getDeviceId() != null) {
-            id = mTelephony.getDeviceId();
-        } else {
-            //android.provider.Settings;
+        try {
+            if (mTelephony.getDeviceId() != null) {
+                id = mTelephony.getDeviceId();
+            } else {
+                //android.provider.Settings;
+                id = Settings.Secure.getString(context.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+            }
+        }catch (Exception e){
+            KLog.e(TAG,"getDeviceIdIMEI Exception:"+e.getMessage());
             id = Settings.Secure.getString(context.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         }
+
         return id;
     }
 

@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Data
+@Keep
 public class MapConfigData {
     public static final String PSE_MODE_NAME_L1 = "L1";
     public static final String PSE_MODE_NAME_L5 = "L5";
@@ -56,6 +57,7 @@ public class MapConfigData {
 
     @NoArgsConstructor
     @Data
+    @Keep
     public static class SatelliteInfoDTO {
         @SerializedName("svid")
         private Integer svid;
@@ -69,6 +71,7 @@ public class MapConfigData {
 
     @NoArgsConstructor
     @Data
+    @Keep
     public static class SequenceDtosDTO {
         @SerializedName("pseModeName")
         private String pseModeName;

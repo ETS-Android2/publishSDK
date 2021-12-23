@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.Keep;
 import androidx.annotation.RequiresApi;
 
 import com.google.gson.Gson;
@@ -176,6 +177,7 @@ public class AzimuthIndoorStrategy {
         try {
             String areaFilePath = "";
             String fileName = "";
+            KLog.d(TAG, "getMapConfig start copy...");
             copyAndDeleteMapConfig();
             File fileAreaCode = getAreaCodeLocalFile(areaId);
             boolean isHasLocalFile = false;
@@ -225,6 +227,7 @@ public class AzimuthIndoorStrategy {
     private void copyAndDeleteMapConfig() {
         List<File> localFiles = RxFileUtils.listFilesInDir(MAPCONFIG_FOLDER_PATH);
         List<String> assetFileNames = RxFileUtils.getAssertsFiles(Utils.getContext());
+        KLog.e(TAG, "copyAndDeleteMapConfig assetFileNames size is :" + assetFileNames.size());
         for (String fileName : assetFileNames) {
             if (fileName.length() < MIN_FILENAME_LENGTH) {
                 continue;

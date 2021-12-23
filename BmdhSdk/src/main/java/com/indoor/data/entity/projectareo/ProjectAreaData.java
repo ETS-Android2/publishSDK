@@ -1,9 +1,12 @@
 package com.indoor.data.entity.projectareo;
 
+import androidx.annotation.Keep;
+
 /**
  * Created by Aaron on 2021-12-09
  * 请求 区域地图配置数据时使用
  */
+@Keep
 public class ProjectAreaData {
     private String 	projectAreaId;
     private int versionNum;

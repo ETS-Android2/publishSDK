@@ -26,6 +26,21 @@
 -keep public class com.indoor.AzimuthIndoorSDK
 -keep public class com.indoor.AzimuthIndoorConfig
 -keep public class com.indoor.IAzimuthNaviManager
+
+#--------------------------------2.第三方包-------------------------------
+#support
+-keep class android.support.** { *; }
+-keep interface android.support.** { *; }
+-dontwarn android.support.**
+
+#databinding
+-keep class android.databinding.** { *; }
+-dontwarn android.databinding.**
+
+#annotation
+-keep class android.support.annotation.** { *; }
+-keep interface android.support.annotation.** { *; }
+
 #retrofit
 -dontwarn retrofit2.**
 -keep class retrofit2.** { *; }
@@ -68,3 +83,32 @@
 -dontwarn sun.misc.**
 -keepattributes *Annotation*
 -keepattributes Signature
+
+#---------------------------------6.其他定制区-------------------------------
+#native方法不被混淆
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+#Parcelable 不被混淆
+-keep class * implements android.os.Parcelable {
+  public static final android.os.Parcelable$Creator *;
+}
+#Serializable 不被混淆
+-keepnames class * implements java.io.Serializable
+#Serializable 不被混淆并且enum 类也不被混淆
+-keepclassmembers class * implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    !static !transient <fields>;
+    !private <fields>;
+    !private <methods>;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
+#保持枚举 enum 类不被混淆 如果混淆报错，建议直接使用上面的 -keepclassmembers class * implements java.io.Serializable即可
+-keepclassmembers enum * {
+  public static **[] values();
+  public static ** valueOf(java.lang.String);
+}
