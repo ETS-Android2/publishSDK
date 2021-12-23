@@ -1041,7 +1041,7 @@ public class RxDeviceTool {
      * 手机系统版本
      */
     public static String getAndroidSdkVersion() {
-        return "AndroidOS"+android.os.Build.VERSION.RELEASE;
+        return "Android_"+android.os.Build.VERSION.RELEASE;
     }
 
     /**
