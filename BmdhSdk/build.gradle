@@ -1,6 +1,8 @@
+
 plugins {
     id 'com.android.library'
     id 'maven-publish'
+    id 'maven'
 }
 
 android {
@@ -78,6 +80,33 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}
+
+
+uploadArchives{
+
+        repositories.mavenDeployer{
+
+                // 本地仓库路径D:\WorkSpace
+
+//        repository(url: uri('../repository'))
+
+                repository(url:"file://D://myaar/repository/")
+
+                // 唯一标识
+
+                pom.groupId = "com.bmdh.sdkrepository"
+
+                // 项目名称
+
+                pom.artifactId = "sdkaar"
+
+                // 版本号
+
+                pom.version = "1.0.0"
+
+            }
+
 }
 
 
